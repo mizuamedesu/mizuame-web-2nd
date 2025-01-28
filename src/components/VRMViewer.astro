@@ -35,11 +35,11 @@ renderer.outputColorSpace = THREE.SRGBColorSpace;
 container.appendChild(renderer.domElement);
 
 // ライトのセットアップ
-const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);  // 初期値 1.0
+const directionalLight = new THREE.DirectionalLight(0xeeeeee, 1.0);  // 初期値 1.0
 directionalLight.position.set(1, 1, 1);
 scene.add(directionalLight);
 
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);  // 初期値 0.5
+const ambientLight = new THREE.AmbientLight(0xeeeeee, 0.5);  // 初期値 0.5
 scene.add(ambientLight);
 
 // スクロール量の追跡
@@ -97,8 +97,8 @@ function animate() {
         }
         
         // スクロール量に応じてライトの強度を変更
-        directionalLight.intensity = 1.0 + (scrollPercent * 1); // 1.0 → 1.5
-        ambientLight.intensity = 0.5 + (scrollPercent * 0.5);    // 0.5 → 0.75
+        directionalLight.intensity = 1.0 + (scrollPercent * 0.5); // 1.0 → 1.5
+        ambientLight.intensity = 0.5 + (scrollPercent * 0.25);    // 0.5 → 0.75
         
         currentVrm.update(clock.getDelta());
     }
@@ -120,7 +120,7 @@ window.addEventListener('resize', () => {
 .vrm-viewer {
     width: 100%;
     height: 100vh;
-    background: #ffffff;
+    background: #c2c2c2;
 }
 </style>
 
