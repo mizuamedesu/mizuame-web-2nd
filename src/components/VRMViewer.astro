@@ -61,7 +61,13 @@
   import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
   import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
   import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass.js";
-  import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
+  import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
+
+  // ▼ VRMA 用の追加インポート
+  import {
+    createVRMAnimationClip,
+    VRMAnimationLoaderPlugin,
+  } from "@pixiv/three-vrm-animation";
 
   // グリッチシェーダーの定義
   const GlitchShader = {
@@ -143,6 +149,7 @@
     ambientLight: THREE.AmbientLight;
   }
 
+  // シーン初期化
   const initScene = (): SceneSetup => {
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0xffffff);
@@ -224,7 +231,7 @@
       const maxScroll = virtualScroll.scrollHeight - virtualScroll.clientHeight;
       scrollPercent = Math.min(virtualScroll.scrollTop / maxScroll, 1);
       
-      // スクロールが完了したらfixedを解除
+      // スクロールが完了したら fixed を解除
       if (scrollPercent >= 0.99) {
         vrmContainer.classList.remove("fixed");
         vrmContainer.classList.add("normal");
@@ -236,11 +243,16 @@
       glitchPass.uniforms.amount.value = 0.2 + (1 - scrollPercent) * 0.6;
     });
 
+    // ▼ GLTFLoader のセットアップ (VRM + VRMA 両方使えるようにプラグイン登録)
     const loader = new GLTFLoader();
     loader.register((parser) => new VRMLoaderPlugin(parser));
+    loader.register((parser) => new VRMAnimationLoaderPlugin(parser));
 
     let currentVrm: VRM | null = null;
+    let currentMixer: THREE.AnimationMixer | null = null;
 
+    // VRM 読み込み
+    // （VRMA 読み込みはこの後に続けて行う）
     try {
       const gltf = await new Promise<GLTF>((resolve, reject) => {
         loader.load(
@@ -259,13 +271,52 @@
         vrm.scene.position.set(0, 0, 0);
         vrm.scene.rotation.y = Math.PI;
 
+        // とりあえず表情テスト
         if (vrm.expressionManager) {
           vrm.expressionManager.setValue("blink", 1.0);
           vrm.expressionManager.update();
         }
       }
     } catch (error) {
-      console.error("Error loading model:", error);
+      console.error("Error loading VRM model:", error);
+    }
+
+    // ▼ VRMA を読み込んで、アニメーションを適用
+    //   VRM が読み込めている前提で実行 (async/awaitで順番保証)
+    try {
+      const gltf2 = await new Promise<GLTF>((resolve, reject) => {
+        loader.load(
+          "/animations/listen.vrma", // ここを実際のファイルパスに置き換える
+          resolve,
+          (progress) => console.log("Loading VRMA progress:", (progress.loaded / progress.total) * 100 + "%"),
+          reject
+        );
+      });
+
+      // .vrma ファイルでは userData.vrmAnimations に配列が入る
+      const vrmAnimations = gltf2.userData.vrmAnimations;
+      if (vrmAnimations && vrmAnimations.length > 0 && currentVrm) {
+        // 最初のアニメーションを仮に使う例
+        const vrma = vrmAnimations[0];
+
+        // Mixer の作成
+        currentMixer = new THREE.AnimationMixer(currentVrm.scene);
+
+        // アニメーションクリップを生成
+        const clip = createVRMAnimationClip(vrma, currentVrm);
+
+        // ループなど調整したい場合は下記のように設定
+        // clip.loop = THREE.LoopRepeat; // ループ再生したい場合
+        // clip.clampWhenFinished = true;
+
+        // 再生開始
+        const action = currentMixer.clipAction(clip);
+        action.play();
+
+        console.log("VRMA animation loaded and playing");
+      }
+    } catch (error) {
+      console.error("Error loading VRMA animation:", error);
     }
 
     const clock = new THREE.Clock();
@@ -275,18 +326,27 @@
 
       const delta = clock.getDelta();
 
+      // VRM の表情連動（スクロール連動）など
       if (currentVrm) {
         if (currentVrm.expressionManager) {
           currentVrm.expressionManager.setValue("blink", 1.0 - scrollPercent);
           currentVrm.expressionManager.update();
         }
 
+        // ライト強度をスクロールに応じて変化
         directionalLight.intensity = 1.0 + scrollPercent * 0.8;
         ambientLight.intensity = 0.5 + scrollPercent * 0.4;
 
+        // VRM のアップデート
         currentVrm.update(delta);
       }
 
+      // ▼ VRMA 再生用ミキサー更新
+      if (currentMixer) {
+        currentMixer.update(delta);
+      }
+
+      // グリッチシェーダーの time を更新しつつレンダリング
       glitchPass.uniforms.time.value += delta;
       composer.render();
     }
