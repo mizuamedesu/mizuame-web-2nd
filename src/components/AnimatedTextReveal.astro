@@ -1,0 +1,142 @@
+---
+// AnimatedTextReveal.astro
+interface Props {
+  text?: string;
+  textSize?: string;
+}
+
+const { 
+  text = "アニメーションテキスト",
+  textSize = "1rem"
+} = Astro.props;
+
+// テキストサイズからコンテナの高さを計算
+// 1rem = 16pxとして、少しpadding分を追加
+const sizeValue = parseFloat(textSize);
+const sizeUnit = textSize.replace(/[\d.]/g, '');
+const containerHeight = `calc(${textSize} + 1${sizeUnit})`;
+---
+
+<div 
+  class="animated-text-container" 
+  data-text={text}
+  style={`--container-height: ${containerHeight}; --text-size: ${textSize}`}
+>
+  <div class="text-container">
+    <span class="text-center">{text}</span>
+  </div>
+  <div class="animation-rectangle"></div>
+</div>
+
+<script>
+class AnimatedTextReveal {
+  private container: HTMLElement;
+  private state: string;
+  private rectangle: HTMLElement;
+  private textContainer: HTMLElement;
+
+  constructor(container: HTMLElement) {
+    this.container = container;
+    this.state = 'initial';
+    this.rectangle = container.querySelector('.animation-rectangle') as HTMLElement;
+    this.textContainer = container.querySelector('.text-container') as HTMLElement;
+    this.setupIntersectionObserver();
+  }
+
+  private setupIntersectionObserver(): void {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          this.runAnimation();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(this.container);
+  }
+
+  private runAnimation(): void {
+    this.setState('expanded');
+
+    setTimeout(() => {
+      this.setState('textVisible');
+      
+      setTimeout(() => {
+        this.setState('shrinking');
+      }, 200);
+    }, 600);
+  }
+
+  private setState(state: string): void {
+    this.state = state;
+    this.container.dataset.state = state;
+    this.textContainer.style.opacity = 
+      (state === 'textVisible' || state === 'shrinking') ? '1' : '0';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll<HTMLElement>('.animated-text-container').forEach(container => {
+    new AnimatedTextReveal(container);
+  });
+});
+</script>
+
+<style>
+    .animated-text-container {
+      position: relative;
+      width: 100%;
+      height: var(--container-height);
+      margin-top: 1rem;
+      padding: 0;
+      box-sizing: border-box;
+    }
+  
+    .text-container {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0; /* 右端を固定 */
+      width: 100%;
+      height: var(--container-height);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 300ms;
+      opacity: 0;
+      z-index: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+  
+    .text-container span {
+      font-size: var(--text-size);
+    }
+  
+    .animation-rectangle {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0; /* 右端を固定 */
+      height: var(--container-height);
+      background-color: #3B82F6;
+      transition: transform 500ms ease-in-out;
+      width: 100%;
+      z-index: 10;
+      transform: scaleX(0);
+      transform-origin: left;
+      padding: 0;
+      box-sizing: border-box;
+    }
+  
+    .animated-text-container[data-state="expanded"] .animation-rectangle,
+    .animated-text-container[data-state="textVisible"] .animation-rectangle {
+      transform: scaleX(1);
+    }
+  
+    .animated-text-container[data-state="shrinking"] .animation-rectangle {
+      transform: scaleX(0);
+      transform-origin: right;
+    }
+  </style>
