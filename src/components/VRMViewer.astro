@@ -1,6 +1,7 @@
 ---
+import AnimatedTextReveal from "../components/AnimatedTextReveal.astro";
 ---
-
+  
 <style>
   .scene-container {
     position: relative;
@@ -12,6 +13,7 @@
     width: 100%;
     height: 100vh;
     transition: position 0.3s ease;
+    z-index: 1; /* 基本の z-index を設定 */
   }
 
   .vrm-container.fixed {
@@ -23,6 +25,7 @@
 
   .vrm-container.normal {
     position: relative;
+    z-index: 1;
   }
 
   .virtual-scroll {
@@ -45,12 +48,30 @@
     height: 200%;
     pointer-events: none;
   }
+
+  /* Styles for AnimatedTextReveal */
+  .animated-text {
+    position: absolute; /* .scene-container に対して絶対配置 */
+    top: 10%; /* vrm-container の上に表示する位置を調整 */
+    left: 50%;
+    transform: translateX(-50%);
+    width: auto;
+    text-align: center;
+    display: none; /* 初期状態では非表示 */
+    z-index: 3; /* vrm-container と virtual-scroll より上に表示 */
+    pointer-events: none; /* 背景の要素と相互作用を維持 */
+  }
 </style>
 
 <div class="scene-container">
   <div id="vrm-container" class="vrm-container fixed"></div>
-  <div class="virtual-scroll" id="virtual-scroll">
+  <div class="virtual-scroll" id="virtual-scroll" tabindex="-1">
     <div class="scroll-content"></div>
+  </div>
+  
+  <!-- Animated Text Reveal Component -->
+  <div id="animated-text" class="animated-text">
+    <AnimatedTextReveal text="Ohayo" textSize="3rem" space="1rem" />
   </div>
 </div>
 
@@ -160,7 +181,7 @@
       0.1,
       100.0
     );
-    camera.position.set(0, 1.3, 0.7);
+    camera.position.set(0, 1.3, 0.8);
     camera.lookAt(0, 1.5, 0);
 
     const container = document.getElementById("vrm-container");
@@ -214,6 +235,13 @@
       ambientLight
     } = initScene();
 
+    // 基本のカメラ回転を保存
+    const baseCameraRotation = new THREE.Euler().copy(camera.rotation);
+
+    // 揺れの強さと速度を設定
+    const shakeIntensity = 0.005; // 揺れの強さ
+    const shakeSpeed = 5; // 揺れの速度
+
     glitchPass.uniforms.amount.value = 0.8;
 
     const virtualScroll = document.getElementById("virtual-scroll");
@@ -226,20 +254,57 @@
       throw new Error("VRM container element not found");
     }
 
-    let scrollPercent = 0;
+    const animatedText = document.getElementById("animated-text");
+    if (!animatedText) {
+      throw new Error("Animated text element not found");
+    }
+
+    let isScrollDisabled = false; // スクロール判定を無効にするフラグ
+    let scrollPercent = 0; // スクロールの進捗割合
+
     virtualScroll.addEventListener("scroll", () => {
+      if (isScrollDisabled) {
+        return; // スクロール判定が無効な場合は処理をスキップ
+      }
+
       const maxScroll = virtualScroll.scrollHeight - virtualScroll.clientHeight;
-      scrollPercent = Math.min(virtualScroll.scrollTop / maxScroll, 1);
+      const currentScroll = virtualScroll.scrollTop;
+      scrollPercent = Math.min(currentScroll / maxScroll, 1);
       
-      // スクロールが完了したら fixed を解除
-      if (scrollPercent >= 0.99) {
+      // スクロールが100%に達した場合
+      if (scrollPercent >= 1) {
+        // スクロール判定を無効にする
+        isScrollDisabled = true;
+        
+        // 3秒後にスクロール判定を再び有効にする
+        setTimeout(() => {
+          isScrollDisabled = false;
+          console.log("Scroll detection re-enabled after 3 seconds");
+        }, 3000); // 3000ミリ秒 = 3秒
+
+        // 必要な処理（例: 固定解除、テキスト表示など）
         vrmContainer.classList.remove("fixed");
         vrmContainer.classList.add("normal");
+        animatedText.style.display = "block";
+
+        // グリッチ効果の量をスクロールに応じて更新
+        glitchPass.uniforms.amount.value = 0.2 + (1 - scrollPercent) * 0.6;
+
+        return; // 100%に達した場合は以降の処理をスキップ
+      }
+
+      // それ以外のスクロール判定
+      if (scrollPercent >= 0.7) {
+        vrmContainer.classList.remove("fixed");
+        vrmContainer.classList.add("normal");
+        animatedText.style.display = "block";
       } else {
         vrmContainer.classList.remove("normal");
         vrmContainer.classList.add("fixed");
+        animatedText.style.display = "none";
       }
 
+      // グリッチ効果の量をスクロールに応じて更新
       glitchPass.uniforms.amount.value = 0.2 + (1 - scrollPercent) * 0.6;
     });
 
@@ -326,6 +391,21 @@
 
       const delta = clock.getDelta();
 
+      // ▼ カメラ手ブレ効果の実装開始
+      // 時間に基づいて揺れを計算
+      const elapsed = clock.elapsedTime * shakeSpeed;
+
+      // サイン波とコサイン波を使用して滑らかな揺れを作成
+      const shakeX = Math.sin(elapsed * 0.7) * shakeIntensity;
+      const shakeY = Math.cos(elapsed * 0.5) * shakeIntensity;
+      const shakeZ = Math.sin(elapsed * 0.3) * shakeIntensity;
+
+      // 基本回転に揺れを加える
+      camera.rotation.x = baseCameraRotation.x + shakeY;
+      camera.rotation.y = baseCameraRotation.y + shakeX;
+      camera.rotation.z = baseCameraRotation.z + shakeZ;
+      // ▼ カメラ手ブレ効果の実装終了
+
       // VRM の表情連動（スクロール連動）など
       if (currentVrm) {
         if (currentVrm.expressionManager) {
@@ -359,6 +439,15 @@
       renderer.setSize(window.innerWidth, window.innerHeight);
       composer.setSize(window.innerWidth, window.innerHeight);
     });
+
+    // Forcefully remove focus from the virtual-scroll div after initialization
+    if (virtualScroll) {
+      // Use a small timeout to ensure all rendering is complete
+      setTimeout(() => {
+        virtualScroll.blur();
+        console.log("virtual-scroll blur executed");
+      }, 100); // Adjust the timeout duration as needed
+    }
   };
 
   document.addEventListener("DOMContentLoaded", main);
