@@ -3,24 +3,24 @@
 interface Props {
   text?: string;
   textSize?: string;
+  space?: string;
 }
 
 const { 
   text = "アニメーションテキスト",
-  textSize = "1rem"
+  textSize = "1rem",
+  space = "0rem"
 } = Astro.props;
 
-// テキストサイズからコンテナの高さを計算
-// 1rem = 16pxとして、少しpadding分を追加
 const sizeValue = parseFloat(textSize);
 const sizeUnit = textSize.replace(/[\d.]/g, '');
-const containerHeight = `calc(${textSize} + 1${sizeUnit})`;
+const containerHeight = `calc(${textSize} + 1${sizeUnit} + (${space} * 2))`;
 ---
 
 <div 
   class="animated-text-container" 
   data-text={text}
-  style={`--container-height: ${containerHeight}; --text-size: ${textSize}`}
+  style={`--container-height: ${containerHeight}; --text-size: ${textSize}; --space: ${space}`}
 >
   <div class="text-container">
     <span class="text-center">{text}</span>
@@ -84,59 +84,57 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 
 <style>
-    .animated-text-container {
-      position: relative;
-      width: 100%;
-      height: var(--container-height);
-      margin-top: 1rem;
-      padding: 0;
-      box-sizing: border-box;
-    }
-  
-    .text-container {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0; /* 右端を固定 */
-      width: 100%;
-      height: var(--container-height);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: opacity 300ms;
-      opacity: 0;
-      z-index: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-  
-    .text-container span {
-      font-size: var(--text-size);
-    }
-  
-    .animation-rectangle {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0; /* 右端を固定 */
-      height: var(--container-height);
-      background-color: #3B82F6;
-      transition: transform 500ms ease-in-out;
-      width: 100%;
-      z-index: 10;
-      transform: scaleX(0);
-      transform-origin: left;
-      padding: 0;
-      box-sizing: border-box;
-    }
-  
-    .animated-text-container[data-state="expanded"] .animation-rectangle,
-    .animated-text-container[data-state="textVisible"] .animation-rectangle {
-      transform: scaleX(1);
-    }
-  
-    .animated-text-container[data-state="shrinking"] .animation-rectangle {
-      transform: scaleX(0);
-      transform-origin: right;
-    }
-  </style>
+  .animated-text-container {
+    position: relative;
+    width: 100%;
+    height: var(--container-height);
+    margin-top: 1rem;
+    padding: var(--space) 0;
+    box-sizing: border-box;
+  }
+
+  .text-container {
+    position: absolute;
+    bottom: var(--space);
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: calc(var(--container-height) - (var(--space) * 2));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 300ms;
+    opacity: 0;
+    z-index: 0;
+    box-sizing: border-box;
+  }
+
+  .text-container span {
+    font-size: var(--text-size);
+  }
+
+  .animation-rectangle {
+    position: absolute;
+    bottom: var(--space);
+    left: 0;
+    right: 0;
+    height: calc(var(--container-height) - (var(--space) * 2));
+    background-color: #000000;
+    transition: transform 500ms ease-in-out;
+    width: 100%;
+    z-index: 10;
+    transform: scaleX(0);
+    transform-origin: left;
+    box-sizing: border-box;
+  }
+
+  .animated-text-container[data-state="expanded"] .animation-rectangle,
+  .animated-text-container[data-state="textVisible"] .animation-rectangle {
+    transform: scaleX(1);
+  }
+
+  .animated-text-container[data-state="shrinking"] .animation-rectangle {
+    transform: scaleX(0);
+    transform-origin: right;
+  }
+</style>
