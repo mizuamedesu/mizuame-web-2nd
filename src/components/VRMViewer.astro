@@ -71,7 +71,7 @@ import AnimatedTextReveal from "../components/AnimatedTextReveal.astro";
   
   <!-- Animated Text Reveal Component -->
   <div id="animated-text" class="animated-text">
-    <AnimatedTextReveal text="Ohayo" textSize="3rem" space="1rem" />
+    <AnimatedTextReveal text="Hi" textSize="3rem" space="1rem" />
   </div>
 </div>
 
@@ -280,7 +280,7 @@ import AnimatedTextReveal from "../components/AnimatedTextReveal.astro";
         setTimeout(() => {
           isScrollDisabled = false;
           console.log("Scroll detection re-enabled after 3 seconds");
-        }, 3000); // 3000ミリ秒 = 3秒
+        }, 0); // 3000ミリ秒 = 3秒
 
         // 必要な処理（例: 固定解除、テキスト表示など）
         vrmContainer.classList.remove("fixed");
