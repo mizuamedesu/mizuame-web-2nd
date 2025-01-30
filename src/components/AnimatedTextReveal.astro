@@ -11,6 +11,27 @@ const {
   space = "0rem"
 } = Astro.props;
 
+// リンクとテキストを分離する関数
+function parseTextAndLink(text: string) {
+  const linkRegex = /\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/;
+  const match = text.match(linkRegex);
+  
+  if (match) {
+    return {
+      isLink: true,
+      displayText: match[1],
+      url: match[2]
+    };
+  }
+  
+  return {
+    isLink: false,
+    displayText: text,
+    url: ''
+  };
+}
+
+const { isLink, displayText, url } = parseTextAndLink(text);
 const sizeValue = parseFloat(textSize);
 const sizeUnit = textSize.replace(/[\d.]/g, '');
 const containerHeight = `calc(${textSize} + 1${sizeUnit} + (${space} * 2))`;
@@ -22,7 +43,11 @@ const containerHeight = `calc(${textSize} + 1${sizeUnit} + (${space} * 2))`;
   style={`--container-height: ${containerHeight}; --text-size: ${textSize}; --space: ${space}`}
 >
   <div class="text-container">
-    <span class="text-center">{text}</span>
+    {isLink ? (
+      <a href={url} class="text-center link-style">{displayText}</a>
+    ) : (
+      <span class="text-center">{displayText}</span>
+    )}
   </div>
   <div class="animation-rectangle"></div>
 </div>
@@ -45,27 +70,21 @@ class AnimatedTextReveal {
     this.hasAnimated = false;
     this.observer = null;
 
-    // textをストレージキーとして使用
     const text = container.dataset.text || 'default';
     this.storageKey = `animated-text-${text}`;
 
-    // セッションストレージをチェック
     const hasPlayed = sessionStorage.getItem(this.storageKey);
     
     if (hasPlayed) {
-      // フラグが立っている場合は直接テキストを表示
       this.showTextDirectly();
     } else {
-      // フラグが立っていない場合はアニメーション用のクラスを追加してアニメーションを開始
       this.container.classList.add('with-animation');
       this.setupIntersectionObserver();
     }
   }
 
   private showTextDirectly(): void {
-    // アニメーション関連の要素を非表示
     this.rectangle.style.display = 'none';
-    // テキストを直接表示
     this.textContainer.style.opacity = '1';
     this.textContainer.style.transition = 'none';
   }
@@ -76,9 +95,7 @@ class AnimatedTextReveal {
         if (entries[0].isIntersecting && !this.hasAnimated) {
           this.runAnimation();
           this.hasAnimated = true;
-          // アニメーション完了をセッションストレージに記録
           sessionStorage.setItem(this.storageKey, 'true');
-          // アニメーション完了後にobserverを解除
           if (this.observer) {
             this.observer.disconnect();
             this.observer = null;
@@ -147,8 +164,20 @@ document.addEventListener('DOMContentLoaded', () => {
     transition: opacity 300ms;
   }
 
-  .text-container span {
+  .text-container span,
+  .text-container a {
     font-size: var(--text-size);
+  }
+
+  .link-style {
+    color: #0066cc;
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  .link-style:hover {
+    color: #003366;
+    text-decoration: underline;
   }
 
   .animation-rectangle {
