@@ -85,6 +85,25 @@ const posts = (await getCollection('blog')).sort(
 					font-size: 1.563em;
 				}
 			}
+			/* 「トップへ戻る」ボタンのスタイル */
+			.back-to-top {
+				text-align: center;
+				margin-top: 2em;
+				margin-bottom: 2em;
+			}
+			.back-to-top a {
+				display: inline-block;
+				padding: 0.75em 1.5em;
+				background: rgb(var(--accent));
+				color: #000000;
+				border-radius: 8px;
+				text-decoration: none;
+				font-size: 1rem;
+				font-weight: bold;
+			}
+			.back-to-top a:hover {
+				background: rgb(var(--accent-dark));
+			}
 		</style>
 	</head>
 	<body>
@@ -106,6 +125,9 @@ const posts = (await getCollection('blog')).sort(
 					}
 				</ul>
 			</section>
+			<div class="back-to-top">
+				<a href="/">トップへ戻る</a>
+			</div>
 		</main>
 		<Footer />
 	</body>

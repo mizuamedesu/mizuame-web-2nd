@@ -61,6 +61,22 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 			.last-updated-on {
 				font-style: italic;
 			}
+			.back-to-list {
+				text-align: center;
+				margin-top: 2em;
+				margin-bottom: 2em;
+			}
+			.back-to-list a {
+				display: inline-block;
+				padding: 0.5em 1em;
+				background: #bbb;
+				color: #fff;
+				border-radius: 4px;
+				text-decoration: none;
+			}
+			.back-to-list a:hover {
+				background: #999;
+			}
 		</style>
 	</head>
 
@@ -98,6 +114,9 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 					<slot />
 				</div>
 			</article>
+			<div class="back-to-list">
+				<a href="/blog">一覧へ戻る</a>
+			</div>
 		</main>
 		<Footer />
 	</body>
