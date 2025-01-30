@@ -4,6 +4,12 @@ import Footer from "../components/Footer.astro";
 import VRMViewer from "../components/VRMViewer.astro";
 import AnimatedTextReveal from "../components/AnimatedTextReveal.astro";
 import { SITE_TITLE, SITE_DESCRIPTION } from "../consts";
+import { getCollection } from 'astro:content';
+
+// ブログ記事を取得し、日付順にソートして最新3件を取得
+const posts = (await getCollection('blog'))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+  .slice(0, 3);
 ---
 
 <!doctype html>
@@ -17,11 +23,62 @@ import { SITE_TITLE, SITE_DESCRIPTION } from "../consts";
         <VRMViewer />
       </div>
       <div class="text-section">
-        <AnimatedTextReveal text="Hello,World" textSize="3rem" space = "10rem" />
-		<AnimatedTextReveal text="こんにちは、みずあめです" textSize="1.5rem" space = "0.5rem" />
-		<AnimatedTextReveal text="Astroで全部描き直しました" textSize="1.5rem" space = "0.5rem" />
-
+        <AnimatedTextReveal text="Hello,World" textSize="3rem" space="10rem" />
+        <AnimatedTextReveal
+          text="こんにちは、みずあめです"
+          textSize="1.5rem"
+          space="0.5rem"
+        />
+        <AnimatedTextReveal
+          text="Astroで全部描き直しました"
+          textSize="1.5rem"
+          space="0.5rem"
+        />
       </div>
+      <AnimatedTextReveal text="About" textSize="2.5rem" space="3rem" />
+      <AnimatedTextReveal
+        text="本名: 佐藤 良"
+        textSize="1.2rem"
+        space="0.4rem"
+      />
+      <AnimatedTextReveal
+        text="所属: 筑波大学情報科学類B1"
+        textSize="1.2rem"
+        space="0.4rem"
+      />
+      <AnimatedTextReveal
+        text="肩書き: テクニカルアーティスト"
+        textSize="1.2rem"
+        space="0.4rem"
+      />
+      <AnimatedTextReveal text="ブログ" textSize="2.5rem" space="3rem" />
+      
+      <!-- 最新3件のブログ記事を表示 -->
+      <div class="blog-section">
+        <ul>
+          {
+            posts.map((post) => (
+              <li>
+                <a href={`/blog/${post.id}/`}>
+                  <div class="post-card">
+                    <h4 class="post-title">{post.data.title}</h4>
+                    <p class="post-description">{post.data.description}</p>
+                    <p class="post-date">
+                      {post.data.pubDate.toLocaleDateString('ja-JP')}
+                    </p>
+                  </div>
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+        
+        <!-- ブログ一覧へのリンク -->
+        <div class="view-all-button">
+          <a href="/blog">ブログ一覧を見る</a>
+        </div>
+      </div>
+
       <div class="footer-section">
         <Footer />
       </div>
@@ -30,7 +87,6 @@ import { SITE_TITLE, SITE_DESCRIPTION } from "../consts";
 </html>
 
 <style>
-  /* リセットCSS */
   * {
     margin: 0;
     padding: 0;
@@ -74,5 +130,80 @@ import { SITE_TITLE, SITE_DESCRIPTION } from "../consts";
     left: 1rem;
     z-index: 1;
     color: #333;
+  }
+
+  /* ブログセクションのスタイル */
+  .blog-section {
+    width: 100%;
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+  }
+
+  .blog-section ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  .blog-section li {
+    margin-bottom: 1.5rem;
+  }
+
+  .blog-section a {
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .post-card {
+    padding: 1.5rem;
+    border-radius: 8px;
+    background-color: #ffffff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .post-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+
+  .post-title {
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+    color: #333;
+  }
+
+  .post-description {
+    color: #666;
+    margin-bottom: 0.5rem;
+    line-height: 1.5;
+  }
+
+  .post-date {
+    font-size: 0.9rem;
+    color: #888;
+  }
+
+  /* ブログ一覧ボタンのスタイル */
+  .view-all-button {
+    text-align: center;
+    margin-top: 2rem;
+  }
+
+  .view-all-button a {
+    display: inline-block;
+    background-color: #333;
+    color: white;
+    padding: 0.8rem 2rem;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    text-decoration: none;
+  }
+
+  .view-all-button a:hover {
+    background-color: #555;
   }
 </style>
