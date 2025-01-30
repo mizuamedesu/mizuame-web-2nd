@@ -1,5 +1,4 @@
 ---
-// AnimatedTextReveal.astro
 interface Props {
   text?: string;
   textSize?: string;
@@ -36,6 +35,7 @@ class AnimatedTextReveal {
   private textContainer: HTMLElement;
   private hasAnimated: boolean;
   private observer: IntersectionObserver | null;
+  private storageKey: string;
 
   constructor(container: HTMLElement) {
     this.container = container;
@@ -44,7 +44,30 @@ class AnimatedTextReveal {
     this.textContainer = container.querySelector('.text-container') as HTMLElement;
     this.hasAnimated = false;
     this.observer = null;
-    this.setupIntersectionObserver();
+
+    // textをストレージキーとして使用
+    const text = container.dataset.text || 'default';
+    this.storageKey = `animated-text-${text}`;
+
+    // セッションストレージをチェック
+    const hasPlayed = sessionStorage.getItem(this.storageKey);
+    
+    if (hasPlayed) {
+      // フラグが立っている場合は直接テキストを表示
+      this.showTextDirectly();
+    } else {
+      // フラグが立っていない場合はアニメーション用のクラスを追加してアニメーションを開始
+      this.container.classList.add('with-animation');
+      this.setupIntersectionObserver();
+    }
+  }
+
+  private showTextDirectly(): void {
+    // アニメーション関連の要素を非表示
+    this.rectangle.style.display = 'none';
+    // テキストを直接表示
+    this.textContainer.style.opacity = '1';
+    this.textContainer.style.transition = 'none';
   }
 
   private setupIntersectionObserver(): void {
@@ -53,6 +76,8 @@ class AnimatedTextReveal {
         if (entries[0].isIntersecting && !this.hasAnimated) {
           this.runAnimation();
           this.hasAnimated = true;
+          // アニメーション完了をセッションストレージに記録
+          sessionStorage.setItem(this.storageKey, 'true');
           // アニメーション完了後にobserverを解除
           if (this.observer) {
             this.observer.disconnect();
@@ -113,10 +138,13 @@ document.addEventListener('DOMContentLoaded', () => {
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: opacity 300ms;
     opacity: 0;
     z-index: 0;
     box-sizing: border-box;
+  }
+
+  .with-animation .text-container {
+    transition: opacity 300ms;
   }
 
   .text-container span {
@@ -130,7 +158,6 @@ document.addEventListener('DOMContentLoaded', () => {
     right: 0;
     height: calc(var(--container-height) - (var(--space) * 2));
     background-color: #000000;
-    transition: transform 500ms ease-in-out;
     width: 100%;
     z-index: 10;
     transform: scaleX(0);
@@ -138,12 +165,16 @@ document.addEventListener('DOMContentLoaded', () => {
     box-sizing: border-box;
   }
 
-  .animated-text-container[data-state="expanded"] .animation-rectangle,
-  .animated-text-container[data-state="textVisible"] .animation-rectangle {
+  .with-animation .animation-rectangle {
+    transition: transform 500ms ease-in-out;
+  }
+
+  .with-animation[data-state="expanded"] .animation-rectangle,
+  .with-animation[data-state="textVisible"] .animation-rectangle {
     transform: scaleX(1);
   }
 
-  .animated-text-container[data-state="shrinking"] .animation-rectangle {
+  .with-animation[data-state="shrinking"] .animation-rectangle {
     transform: scaleX(0);
     transform-origin: right;
   }
