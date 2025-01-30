@@ -3,6 +3,7 @@ import AnimatedTextReveal from "../components/AnimatedTextReveal.astro";
 ---
   
 <style>
+  /* Existing styles remain unchanged */
   .scene-container {
     position: relative;
     width: 100%;
@@ -235,35 +236,53 @@ import AnimatedTextReveal from "../components/AnimatedTextReveal.astro";
       ambientLight
     } = initScene();
 
+    const vrmContainer = document.getElementById("vrm-container");
+    const animatedText = document.getElementById("animated-text");
+    const virtualScroll = document.getElementById("virtual-scroll");
+
+    if (!vrmContainer || !animatedText || !virtualScroll) {
+      throw new Error("Required elements not found");
+    }
+
+    // チェック: セッションストレージにフラグが立っているか確認
+    const isScrollCompleted = sessionStorage.getItem('scrollCompleted') === 'true';
+
+    if (isScrollCompleted) {
+      // スクロールが完了している場合の初期設定
+      vrmContainer.classList.remove("fixed");
+      vrmContainer.classList.add("normal");
+      animatedText.style.display = "block";
+
+      // グリッチ効果を最終値に設定
+      glitchPass.uniforms.amount.value = 0.2; // 100%スクロール時の量に調整
+
+      // 必要に応じて他の初期化処理を追加
+      console.log("Scroll completed flag detected. Skipping scroll animations.");
+    } else {
+      // 通常の初期化処理（スクロールアニメーションを有効にする）
+      glitchPass.uniforms.amount.value = 0.8;
+    }
+
     // 基本のカメラ回転を保存
     const baseCameraRotation = new THREE.Euler().copy(camera.rotation);
-
+  
     // 揺れの強さと速度を設定
     const shakeIntensity = 0.005; // 揺れの強さ
     const shakeSpeed = 5; // 揺れの速度
 
-    glitchPass.uniforms.amount.value = 0.8;
-
-    const virtualScroll = document.getElementById("virtual-scroll");
-    if (!virtualScroll) {
-      throw new Error("Virtual scroll element not found");
-    }
-
-    const vrmContainer = document.getElementById("vrm-container");
-    if (!vrmContainer) {
-      throw new Error("VRM container element not found");
-    }
-
-    const animatedText = document.getElementById("animated-text");
-    if (!animatedText) {
-      throw new Error("Animated text element not found");
-    }
-
     let isScrollDisabled = false; // スクロール判定を無効にするフラグ
-    let scrollPercent = 0; // スクロールの進捗割合
+    let scrollPercent = isScrollCompleted ? 1 : 0; // スクロールの進捗割合
+
+    if (isScrollCompleted) {
+      // 初期状態を設定
+      vrmContainer.classList.remove("fixed");
+      vrmContainer.classList.add("normal");
+      animatedText.style.display = "block";
+      glitchPass.uniforms.amount.value = 0.2;
+    }
 
     virtualScroll.addEventListener("scroll", () => {
-      if (isScrollDisabled) {
+      if (isScrollDisabled || isScrollCompleted) {
         return; // スクロール判定が無効な場合は処理をスキップ
       }
 
@@ -276,11 +295,8 @@ import AnimatedTextReveal from "../components/AnimatedTextReveal.astro";
         // スクロール判定を無効にする
         isScrollDisabled = true;
         
-        // 3秒後にスクロール判定を再び有効にする
-        setTimeout(() => {
-          isScrollDisabled = false;
-          console.log("Scroll detection re-enabled after 3 seconds");
-        }, 0); // 3000ミリ秒 = 3秒
+        // セッションストレージにフラグを設定
+        sessionStorage.setItem('scrollCompleted', 'true');
 
         // 必要な処理（例: 固定解除、テキスト表示など）
         vrmContainer.classList.remove("fixed");
