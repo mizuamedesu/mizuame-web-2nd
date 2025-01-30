@@ -1,9 +1,11 @@
 ---
 import AnimatedTextReveal from "../components/AnimatedTextReveal.astro";
 ---
-  
+
 <style>
-  /* Existing styles remain unchanged */
+  /* ==================================================
+   * もともとのスタイル
+   * ================================================== */
   .scene-container {
     position: relative;
     width: 100%;
@@ -50,27 +52,81 @@ import AnimatedTextReveal from "../components/AnimatedTextReveal.astro";
     pointer-events: none;
   }
 
-  /* Styles for AnimatedTextReveal */
+  /* AnimatedTextReveal のスタイル */
   .animated-text {
     position: absolute; /* .scene-container に対して絶対配置 */
-    top: 10%; /* vrm-container の上に表示する位置を調整 */
+    top: 10%;
     left: 50%;
     transform: translateX(-50%);
     width: auto;
     text-align: center;
     display: none; /* 初期状態では非表示 */
-    z-index: 3; /* vrm-container と virtual-scroll より上に表示 */
-    pointer-events: none; /* 背景の要素と相互作用を維持 */
+    z-index: 3; 
+    pointer-events: none;
+  }
+
+  /* ==================================================
+   * ローディング画面関連のスタイル（背景が白でバーが黒）
+   * ================================================== */
+  .loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #ffffff; /* 白背景 */
+    z-index: 9999; /* 最前面 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    pointer-events: all; /* 下の要素を触れないように */
+  }
+
+  .loading-text {
+    color: #000; /* 黒文字 */
+    margin-bottom: 16px;
+    font-size: 1.2rem;
+  }
+
+  .loading-progress {
+    width: 60%;
+    max-width: 400px;
+    height: 20px;
+    background-color: #ccc; 
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .progress-bar {
+    width: 0%;
+    height: 100%;
+    background-color: #000; /* プログレスバーを黒 */
+    transition: width 0.1s ease;
   }
 </style>
 
+<!-- ==================================================
+     ローディング画面
+     ================================================== -->
+<div id="loading-overlay" class="loading-overlay">
+  <div class="loading-text">
+    Loading... <span id="loading-percentage">0</span>%
+  </div>
+  <div class="loading-progress">
+    <div id="progress-bar" class="progress-bar"></div>
+  </div>
+</div>
+
+<!-- ==================================================
+     メインシーン
+     ================================================== -->
 <div class="scene-container">
   <div id="vrm-container" class="vrm-container fixed"></div>
   <div class="virtual-scroll" id="virtual-scroll" tabindex="-1">
     <div class="scroll-content"></div>
   </div>
   
-  <!-- Animated Text Reveal Component -->
   <div id="animated-text" class="animated-text">
     <AnimatedTextReveal text="Hi" textSize="3rem" space="1rem" />
   </div>
@@ -85,13 +141,15 @@ import AnimatedTextReveal from "../components/AnimatedTextReveal.astro";
   import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass.js";
   import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
 
-  // ▼ VRMA 用の追加インポート
+  // VRMA 用の追加インポート
   import {
     createVRMAnimationClip,
     VRMAnimationLoaderPlugin,
   } from "@pixiv/three-vrm-animation";
 
+  // ==================================================
   // グリッチシェーダーの定義
+  // ==================================================
   const GlitchShader = {
     uniforms: {
       tDiffuse: { value: null },
@@ -171,7 +229,9 @@ import AnimatedTextReveal from "../components/AnimatedTextReveal.astro";
     ambientLight: THREE.AmbientLight;
   }
 
+  // ==================================================
   // シーン初期化
+  // ==================================================
   const initScene = (): SceneSetup => {
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0xffffff);
@@ -225,7 +285,13 @@ import AnimatedTextReveal from "../components/AnimatedTextReveal.astro";
     };
   };
 
+  // ==================================================
+  // メイン処理
+  // ==================================================
   const main = async () => {
+    // ロード中はスクロール無効化
+    document.body.style.overflow = "hidden";
+
     const {
       scene,
       camera,
@@ -236,80 +302,99 @@ import AnimatedTextReveal from "../components/AnimatedTextReveal.astro";
       ambientLight
     } = initScene();
 
+    // 必須要素の取得(存在しなければError)
     const vrmContainer = document.getElementById("vrm-container");
-    const animatedText = document.getElementById("animated-text");
-    const virtualScroll = document.getElementById("virtual-scroll");
+    if (!vrmContainer) throw new Error("#vrm-container not found");
 
-    if (!vrmContainer || !animatedText || !virtualScroll) {
-      throw new Error("Required elements not found");
+    const animatedText = document.getElementById("animated-text");
+    if (!animatedText) throw new Error("#animated-text not found");
+
+    const virtualScroll = document.getElementById("virtual-scroll");
+    if (!virtualScroll) throw new Error("#virtual-scroll not found");
+
+    // ローディング画面関連の取得
+    const loadingOverlay = document.getElementById("loading-overlay");
+    if (!loadingOverlay) throw new Error("#loading-overlay not found");
+
+    const progressBar = document.getElementById("progress-bar");
+    if (!progressBar) throw new Error("#progress-bar not found");
+
+    const loadingPercentage = document.getElementById("loading-percentage");
+    if (!loadingPercentage) throw new Error("#loading-percentage not found");
+
+    // ロード済みフラグや進捗率
+    let vrmLoaded = false;
+    let vrmaLoaded = false;
+    let vrmProgressValue = 0;
+    let vrmaProgressValue = 0;
+
+    // updateLoadingDisplay で2つの進捗平均を表示
+    function updateLoadingDisplay() {
+      const totalProgress = (vrmProgressValue + vrmaProgressValue) / 2.0;
+      const percent = Math.floor(totalProgress * 100);
+
+      progressBar.style.width = percent + "%";
+      loadingPercentage.textContent = String(percent);
+
+      // 両方読み込み終わったらオーバーレイを消してスクロール有効化
+      if (vrmLoaded && vrmaLoaded) {
+        setTimeout(() => {
+          loadingOverlay.style.display = "none";
+          // ロード完了したらスクロールを戻す
+          document.body.style.overflow = "";
+        }, 500);
+      }
     }
 
-    // チェック: セッションストレージにフラグが立っているか確認
-    const isScrollCompleted = sessionStorage.getItem('scrollCompleted') === 'true';
+    // セッションストレージ確認
+    const isScrollCompleted = sessionStorage.getItem("scrollCompleted") === "true";
 
+    // スクロール連動の初期値
     if (isScrollCompleted) {
-      // スクロールが完了している場合の初期設定
       vrmContainer.classList.remove("fixed");
       vrmContainer.classList.add("normal");
       animatedText.style.display = "block";
-
-      // グリッチ効果を最終値に設定
-      glitchPass.uniforms.amount.value = 0.2; // 100%スクロール時の量に調整
-
-      // 必要に応じて他の初期化処理を追加
+      glitchPass.uniforms.amount.value = 0.2;
       console.log("Scroll completed flag detected. Skipping scroll animations.");
     } else {
-      // 通常の初期化処理（スクロールアニメーションを有効にする）
       glitchPass.uniforms.amount.value = 0.8;
     }
 
-    // 基本のカメラ回転を保存
+    // カメラ手ブレ用
     const baseCameraRotation = new THREE.Euler().copy(camera.rotation);
-  
-    // 揺れの強さと速度を設定
     const shakeIntensity = 0.005; // 揺れの強さ
-    const shakeSpeed = 5; // 揺れの速度
+    const shakeSpeed = 5;        // 揺れの速度
 
-    let isScrollDisabled = false; // スクロール判定を無効にするフラグ
-    let scrollPercent = isScrollCompleted ? 1 : 0; // スクロールの進捗割合
+    let isScrollDisabled = false; 
+    let scrollPercent = isScrollCompleted ? 1 : 0;
 
     if (isScrollCompleted) {
-      // 初期状態を設定
       vrmContainer.classList.remove("fixed");
       vrmContainer.classList.add("normal");
       animatedText.style.display = "block";
       glitchPass.uniforms.amount.value = 0.2;
     }
 
+    // スクロールイベント
     virtualScroll.addEventListener("scroll", () => {
       if (isScrollDisabled || isScrollCompleted) {
-        return; // スクロール判定が無効な場合は処理をスキップ
+        return;
       }
-
       const maxScroll = virtualScroll.scrollHeight - virtualScroll.clientHeight;
       const currentScroll = virtualScroll.scrollTop;
       scrollPercent = Math.min(currentScroll / maxScroll, 1);
       
-      // スクロールが100%に達した場合
       if (scrollPercent >= 1) {
-        // スクロール判定を無効にする
         isScrollDisabled = true;
-        
-        // セッションストレージにフラグを設定
-        sessionStorage.setItem('scrollCompleted', 'true');
+        sessionStorage.setItem("scrollCompleted", "true");
 
-        // 必要な処理（例: 固定解除、テキスト表示など）
         vrmContainer.classList.remove("fixed");
         vrmContainer.classList.add("normal");
         animatedText.style.display = "block";
-
-        // グリッチ効果の量をスクロールに応じて更新
         glitchPass.uniforms.amount.value = 0.2 + (1 - scrollPercent) * 0.6;
-
-        return; // 100%に達した場合は以降の処理をスキップ
+        return;
       }
 
-      // それ以外のスクロール判定
       if (scrollPercent >= 0.7) {
         vrmContainer.classList.remove("fixed");
         vrmContainer.classList.add("normal");
@@ -320,26 +405,30 @@ import AnimatedTextReveal from "../components/AnimatedTextReveal.astro";
         animatedText.style.display = "none";
       }
 
-      // グリッチ効果の量をスクロールに応じて更新
       glitchPass.uniforms.amount.value = 0.2 + (1 - scrollPercent) * 0.6;
     });
 
-    // ▼ GLTFLoader のセットアップ (VRM + VRMA 両方使えるようにプラグイン登録)
+    // GLTFLoader セットアップ
     const loader = new GLTFLoader();
     loader.register((parser) => new VRMLoaderPlugin(parser));
     loader.register((parser) => new VRMAnimationLoaderPlugin(parser));
 
+    // currentVrm / currentMixer は型を定義
     let currentVrm: VRM | null = null;
     let currentMixer: THREE.AnimationMixer | null = null;
 
-    // VRM 読み込み
-    // （VRMA 読み込みはこの後に続けて行う）
+    // -----------------------------
+    // VRM ロード
+    // -----------------------------
     try {
       const gltf = await new Promise<GLTF>((resolve, reject) => {
         loader.load(
           "/models/demo.vrm",
           resolve,
-          (progress) => console.log("Loading progress:", (progress.loaded / progress.total) * 100 + "%"),
+          (progress) => {
+            vrmProgressValue = progress.loaded / progress.total; 
+            updateLoadingDisplay();
+          },
           reject
         );
       });
@@ -352,103 +441,97 @@ import AnimatedTextReveal from "../components/AnimatedTextReveal.astro";
         vrm.scene.position.set(0, 0, 0);
         vrm.scene.rotation.y = Math.PI;
 
-        // とりあえず表情テスト
+        // サンプルとして表情を設定
         if (vrm.expressionManager) {
           vrm.expressionManager.setValue("blink", 1.0);
           vrm.expressionManager.update();
         }
       }
+
+      vrmLoaded = true;
+      updateLoadingDisplay(); // ロード完了を反映
     } catch (error) {
       console.error("Error loading VRM model:", error);
     }
 
-    // ▼ VRMA を読み込んで、アニメーションを適用
-    //   VRM が読み込めている前提で実行 (async/awaitで順番保証)
+    // -----------------------------
+    // VRMA ロード
+    // -----------------------------
     try {
       const gltf2 = await new Promise<GLTF>((resolve, reject) => {
         loader.load(
-          "/animations/listen.vrma", // ここを実際のファイルパスに置き換える
+          "/animations/listen.vrma", 
           resolve,
-          (progress) => console.log("Loading VRMA progress:", (progress.loaded / progress.total) * 100 + "%"),
+          (progress) => {
+            vrmaProgressValue = progress.loaded / progress.total;
+            updateLoadingDisplay();
+          },
           reject
         );
       });
 
-      // .vrma ファイルでは userData.vrmAnimations に配列が入る
       const vrmAnimations = gltf2.userData.vrmAnimations;
       if (vrmAnimations && vrmAnimations.length > 0 && currentVrm) {
-        // 最初のアニメーションを仮に使う例
         const vrma = vrmAnimations[0];
 
-        // Mixer の作成
         currentMixer = new THREE.AnimationMixer(currentVrm.scene);
-
-        // アニメーションクリップを生成
         const clip = createVRMAnimationClip(vrma, currentVrm);
-
-        // ループなど調整したい場合は下記のように設定
-        // clip.loop = THREE.LoopRepeat; // ループ再生したい場合
-        // clip.clampWhenFinished = true;
-
-        // 再生開始
         const action = currentMixer.clipAction(clip);
         action.play();
 
         console.log("VRMA animation loaded and playing");
       }
+
+      vrmaLoaded = true;
+      updateLoadingDisplay(); // ロード完了を反映
     } catch (error) {
       console.error("Error loading VRMA animation:", error);
     }
 
+    // -----------------------------
+    // アニメーションループ開始
+    // -----------------------------
     const clock = new THREE.Clock();
-
     function animate() {
       requestAnimationFrame(animate);
 
       const delta = clock.getDelta();
 
-      // ▼ カメラ手ブレ効果の実装開始
-      // 時間に基づいて揺れを計算
+      // カメラ手ブレ効果
       const elapsed = clock.elapsedTime * shakeSpeed;
-
-      // サイン波とコサイン波を使用して滑らかな揺れを作成
       const shakeX = Math.sin(elapsed * 0.7) * shakeIntensity;
       const shakeY = Math.cos(elapsed * 0.5) * shakeIntensity;
       const shakeZ = Math.sin(elapsed * 0.3) * shakeIntensity;
 
-      // 基本回転に揺れを加える
       camera.rotation.x = baseCameraRotation.x + shakeY;
       camera.rotation.y = baseCameraRotation.y + shakeX;
       camera.rotation.z = baseCameraRotation.z + shakeZ;
-      // ▼ カメラ手ブレ効果の実装終了
 
-      // VRM の表情連動（スクロール連動）など
+      // VRM・ライトなどの更新
       if (currentVrm) {
         if (currentVrm.expressionManager) {
           currentVrm.expressionManager.setValue("blink", 1.0 - scrollPercent);
           currentVrm.expressionManager.update();
         }
 
-        // ライト強度をスクロールに応じて変化
         directionalLight.intensity = 1.0 + scrollPercent * 0.8;
         ambientLight.intensity = 0.5 + scrollPercent * 0.4;
 
-        // VRM のアップデート
         currentVrm.update(delta);
       }
 
-      // ▼ VRMA 再生用ミキサー更新
       if (currentMixer) {
         currentMixer.update(delta);
       }
 
-      // グリッチシェーダーの time を更新しつつレンダリング
       glitchPass.uniforms.time.value += delta;
       composer.render();
     }
-
     animate();
 
+    // -----------------------------
+    // リサイズ対応
+    // -----------------------------
     window.addEventListener("resize", () => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
@@ -456,14 +539,11 @@ import AnimatedTextReveal from "../components/AnimatedTextReveal.astro";
       composer.setSize(window.innerWidth, window.innerHeight);
     });
 
-    // Forcefully remove focus from the virtual-scroll div after initialization
-    if (virtualScroll) {
-      // Use a small timeout to ensure all rendering is complete
-      setTimeout(() => {
-        virtualScroll.blur();
-        console.log("virtual-scroll blur executed");
-      }, 100); // Adjust the timeout duration as needed
-    }
+    // virtual-scroll へのフォーカス強制解除
+    setTimeout(() => {
+      (virtualScroll as HTMLDivElement).blur();
+      console.log("virtual-scroll blur executed");
+    }, 100);
   };
 
   document.addEventListener("DOMContentLoaded", main);
