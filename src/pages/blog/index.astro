@@ -15,6 +15,9 @@ const posts = (await getCollection('blog')).sort(
 	<head>
 		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
 		<style>
+			body {
+				background-color: #f5f5f5;
+			}
 			main {
 				width: 960px;
 			}
