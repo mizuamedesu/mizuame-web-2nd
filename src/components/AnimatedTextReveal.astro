@@ -34,26 +34,36 @@ class AnimatedTextReveal {
   private state: string;
   private rectangle: HTMLElement;
   private textContainer: HTMLElement;
+  private hasAnimated: boolean;
+  private observer: IntersectionObserver | null;
 
   constructor(container: HTMLElement) {
     this.container = container;
     this.state = 'initial';
     this.rectangle = container.querySelector('.animation-rectangle') as HTMLElement;
     this.textContainer = container.querySelector('.text-container') as HTMLElement;
+    this.hasAnimated = false;
+    this.observer = null;
     this.setupIntersectionObserver();
   }
 
   private setupIntersectionObserver(): void {
-    const observer = new IntersectionObserver(
+    this.observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting) {
+        if (entries[0].isIntersecting && !this.hasAnimated) {
           this.runAnimation();
+          this.hasAnimated = true;
+          // アニメーション完了後にobserverを解除
+          if (this.observer) {
+            this.observer.disconnect();
+            this.observer = null;
+          }
         }
       },
       { threshold: 0.1 }
     );
 
-    observer.observe(this.container);
+    this.observer.observe(this.container);
   }
 
   private runAnimation(): void {
