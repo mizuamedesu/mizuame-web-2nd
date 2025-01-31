@@ -16,7 +16,7 @@ const posts = (await getCollection('blog')).sort(
 		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
 		<style>
 			body {
-				background-color: #f5f5f5;
+				background-color: #ffffff;
 			}
 			main {
 				width: 960px;
@@ -50,6 +50,8 @@ const posts = (await getCollection('blog')).sort(
 			ul li img {
 				margin-bottom: 0.5rem;
 				border-radius: 12px;
+				box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4); 
+
 			}
 			ul li a {
 				display: block;
