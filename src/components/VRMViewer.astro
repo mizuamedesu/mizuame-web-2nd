@@ -128,7 +128,7 @@ import AnimatedTextReveal from "../components/AnimatedTextReveal.astro";
   </div>
   
   <div id="animated-text" class="animated-text">
-    <AnimatedTextReveal text="Hi" textSize="3rem" space="1rem" />
+    <AnimatedTextReveal text="↓kawaii" textSize="3rem" space="1rem" />
   </div>
 </div>
 
@@ -237,13 +237,13 @@ import AnimatedTextReveal from "../components/AnimatedTextReveal.astro";
     scene.background = new THREE.Color(0xffffff);
 
     const camera = new THREE.PerspectiveCamera(
-      45.0,
+      70.0,
       window.innerWidth / window.innerHeight,
       0.1,
       100.0
     );
-    camera.position.set(0, 1.3, 0.8);
-    camera.lookAt(0, 1.5, 0);
+    camera.position.set(1, 1.4, 0.2);
+    camera.lookAt(0, 1.4, 0);
 
     const container = document.getElementById("vrm-container");
     if (!container) {
@@ -349,31 +349,60 @@ import AnimatedTextReveal from "../components/AnimatedTextReveal.astro";
     // セッションストレージ確認
     const isScrollCompleted = sessionStorage.getItem("scrollCompleted") === "true";
 
+    // カメラの初期位置と最終位置を定義
+    const initialCameraPos = new THREE.Vector3(1, 1.4, 0.2);
+    const finalCameraPos = new THREE.Vector3(0, 1.3, 0.8);
+
+    // カメラの初期注視点と最終注視点を定義
+    const initialLookAt = new THREE.Vector3(0, 1.4, 0);
+    const finalLookAt = new THREE.Vector3(0, 1.5, 0);
+
+    // 現在の注視点（アニメーション用）
+    const currentLookAt = new THREE.Vector3().copy(initialLookAt);
+
     // スクロール連動の初期値
     if (isScrollCompleted) {
       vrmContainer.classList.remove("fixed");
       vrmContainer.classList.add("normal");
       animatedText.style.display = "block";
       glitchPass.uniforms.amount.value = 0.2;
+      
+      // スクロール完了時は最終位置に設定
+      camera.position.copy(finalCameraPos);
+      currentLookAt.copy(finalLookAt);
+      camera.lookAt(currentLookAt);
+      
       console.log("Scroll completed flag detected. Skipping scroll animations.");
     } else {
+      // 初期状態ではグリッチを強く
       glitchPass.uniforms.amount.value = 0.8;
+      
+      // 初期位置に設定
+      camera.position.copy(initialCameraPos);
+      camera.lookAt(initialLookAt);
     }
 
     // カメラ手ブレ用
-    const baseCameraRotation = new THREE.Euler().copy(camera.rotation);
+    const baseCameraRotation = new THREE.Euler();
     const shakeIntensity = 0.005; // 揺れの強さ
     const shakeSpeed = 5;        // 揺れの速度
 
+    // 現在の注視点に基づいてカメラの基本回転を計算する関数
+    function updateBaseCameraRotation() {
+      // 一時的にカメラを注視点に向ける
+      const tempCamera = camera.clone();
+      tempCamera.position.copy(camera.position);
+      tempCamera.lookAt(currentLookAt);
+      
+      // その回転値を取得
+      baseCameraRotation.copy(tempCamera.rotation);
+    }
+
+    // 初期状態での基本回転を設定
+    updateBaseCameraRotation();
+
     let isScrollDisabled = false; 
     let scrollPercent = isScrollCompleted ? 1 : 0;
-
-    if (isScrollCompleted) {
-      vrmContainer.classList.remove("fixed");
-      vrmContainer.classList.add("normal");
-      animatedText.style.display = "block";
-      glitchPass.uniforms.amount.value = 0.2;
-    }
 
     // スクロールイベント
     virtualScroll.addEventListener("scroll", () => {
@@ -383,6 +412,26 @@ import AnimatedTextReveal from "../components/AnimatedTextReveal.astro";
       const maxScroll = virtualScroll.scrollHeight - virtualScroll.clientHeight;
       const currentScroll = virtualScroll.scrollTop;
       scrollPercent = Math.min(currentScroll / maxScroll, 1);
+      
+      // カメラの位置を補間
+      camera.position.lerpVectors(
+        initialCameraPos,
+        finalCameraPos,
+        Math.min(scrollPercent * 1.5, 1) // scrollPercentが0.7付近で変化が完了するように1.5倍
+      );
+      
+      // 注視点を補間
+      currentLookAt.lerpVectors(
+        initialLookAt,
+        finalLookAt,
+        Math.min(scrollPercent * 1.5, 1)
+      );
+      
+      // カメラの注視点を更新
+      camera.lookAt(currentLookAt);
+      
+      // 基本回転を更新（手ブレ効果用）
+      updateBaseCameraRotation();
       
       if (scrollPercent >= 1) {
         isScrollDisabled = true;
