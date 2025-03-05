@@ -61,6 +61,8 @@ class AnimatedTextReveal {
   private hasAnimated: boolean;
   private observer: IntersectionObserver | null;
   private storageKey: string;
+  private baseTransitionDuration: number = 500; // ベースとなるトランジション時間（ミリ秒）
+  private baseWidth: number = 1920; // 基準となる画面幅
 
   constructor(container: HTMLElement) {
     this.container = container;
@@ -79,8 +81,28 @@ class AnimatedTextReveal {
       this.showTextDirectly();
     } else {
       this.container.classList.add('with-animation');
+      this.updateTransitionSpeed();
       this.setupIntersectionObserver();
+      
+      // ウィンドウサイズが変更されたときにトランジション速度を更新
+      window.addEventListener('resize', () => this.updateTransitionSpeed());
     }
+  }
+
+  private updateTransitionSpeed(): void {
+    const currentWidth = window.innerWidth;
+    const speedRatio = Math.max(0.5, Math.min(1, currentWidth / this.baseWidth));
+    
+    // CSS変数を使ってトランジション時間を更新
+    const rectangleDuration = Math.round(this.baseTransitionDuration * speedRatio);
+    const textDuration = Math.round(300 * speedRatio);
+    const expandDuration = Math.round(600 * speedRatio);
+    const shrinkDelay = Math.round(200 * speedRatio);
+    
+    this.container.style.setProperty('--rectangle-duration', `${rectangleDuration}ms`);
+    this.container.style.setProperty('--text-duration', `${textDuration}ms`);
+    this.container.setAttribute('data-expand-duration', expandDuration.toString());
+    this.container.setAttribute('data-shrink-delay', shrinkDelay.toString());
   }
 
   private showTextDirectly(): void {
@@ -111,13 +133,17 @@ class AnimatedTextReveal {
   private runAnimation(): void {
     this.setState('expanded');
 
+    // データ属性から動的に時間を取得
+    const expandDuration = parseInt(this.container.getAttribute('data-expand-duration') || '600');
+    const shrinkDelay = parseInt(this.container.getAttribute('data-shrink-delay') || '200');
+
     setTimeout(() => {
       this.setState('textVisible');
       
       setTimeout(() => {
         this.setState('shrinking');
-      }, 200);
-    }, 600);
+      }, shrinkDelay);
+    }, expandDuration);
   }
 
   private setState(state: string): void {
@@ -143,6 +169,8 @@ document.addEventListener('DOMContentLoaded', () => {
     margin-top: 1rem;
     padding: var(--space) 0;
     box-sizing: border-box;
+    --rectangle-duration: 500ms;
+    --text-duration: 300ms;
   }
 
   .text-container {
@@ -161,7 +189,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   .with-animation .text-container {
-    transition: opacity 300ms;
+    transition: opacity var(--text-duration);
   }
 
   .text-container span,
@@ -195,7 +223,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   .with-animation .animation-rectangle {
-    transition: transform 500ms ease-in-out;
+    transition: transform var(--rectangle-duration) ease-in-out;
   }
 
   .with-animation[data-state="expanded"] .animation-rectangle,
