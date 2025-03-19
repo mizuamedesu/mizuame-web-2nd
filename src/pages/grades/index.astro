@@ -3,643 +3,704 @@
 ---
 
 <html lang="ja">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>筑田大学成績</title>
-  <style>
-    :root {
-      --color-a-plus: #4285F4;
-      --color-a: #5E97F6;
-      --color-b: #33B679;
-      --color-c: #F4B400;
-      --color-d: #E67C73;
-      --color-f: #A2A2A2;
-      --color-p: #7986CB;
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>筑田大学成績</title>
+    <style>
+      :root {
+        --color-a-plus: #4285f4;
+        --color-a: #5e97f6;
+        --color-b: #33b679;
+        --color-c: #f4b400;
+        --color-d: #e67c73;
+        --color-f: #a2a2a2;
+        --color-p: #7986cb;
+      }
 
-    body {
-      font-family: 'Helvetica Neue', Arial, sans-serif;
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 20px;
-      color: #333;
-      background-color: #f9f9f9;
-    }
+      body {
+        font-family: "Helvetica Neue", Arial, sans-serif;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        color: #333;
+        background-color: #f9f9f9;
+      }
 
-    h1 {
-      text-align: center;
-      margin-bottom: 30px;
-      color: #1a73e8;
-    }
-    
-    .filters {
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-      margin-bottom: 30px;
-    }
-    
-    .filter-group {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      align-items: center;
-      gap: 10px;
-    }
-    
-    .filter-label {
-      font-weight: bold;
-      margin-right: 5px;
-    }
+      h1 {
+        text-align: center;
+        margin-bottom: 30px;
+        color: #1a73e8;
+      }
 
-    .container {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-    }
+      .filters {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        margin-bottom: 30px;
+      }
 
-    @media (max-width: 768px) {
+      .filter-group {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .filter-label {
+        font-weight: bold;
+        margin-right: 5px;
+      }
+
       .container {
-        grid-template-columns: 1fr;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
       }
-      
-      /* スマホ用の表の調整 */
+
+      @media (max-width: 768px) {
+        .container {
+          grid-template-columns: 1fr;
+        }
+
+        /* スマホ用の表の調整 */
+        .card {
+          padding: 10px;
+        }
+
+        table {
+          display: block;
+          overflow-x: auto;
+          white-space: nowrap;
+          -webkit-overflow-scrolling: touch;
+        }
+
+        th,
+        td {
+          padding: 8px 10px;
+        }
+      }
+
       .card {
-        padding: 10px;
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        overflow: hidden; /* はみ出し防止 */
       }
-      
+
+      .gpa-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .gpa-value {
+        font-size: 72px;
+        font-weight: bold;
+        color: #1a73e8;
+      }
+
+      .gpa-details {
+        margin-top: 10px;
+        text-align: center;
+        color: #666;
+      }
+
+      .chart-container {
+        position: relative;
+        height: 300px;
+        width: 100%;
+      }
+
       table {
-        display: block;
-        overflow-x: auto;
-        white-space: nowrap;
-        -webkit-overflow-scrolling: touch;
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
       }
-      
-      th, td {
-        padding: 8px 10px;
+
+      th,
+      td {
+        padding: 12px 15px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
       }
-    }
 
-    .card {
-      background: white;
-      border-radius: 12px;
-      padding: 20px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      overflow: hidden; /* はみ出し防止 */
-    }
+      th {
+        background-color: #f2f2f2;
+        position: sticky;
+        top: 0;
+      }
 
-    .gpa-card {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-    }
+      tr:hover {
+        background-color: #f5f5f5;
+      }
 
-    .gpa-value {
-      font-size: 72px;
-      font-weight: bold;
-      color: #1a73e8;
-    }
+      tr.grade-row-a-plus {
+        background-color: rgba(66, 133, 244, 0.1);
+      }
 
-    .gpa-details {
-      margin-top: 10px;
-      text-align: center;
-      color: #666;
-    }
+      tr.grade-row-a {
+        background-color: rgba(94, 151, 246, 0.1);
+      }
 
-    .chart-container {
-      position: relative;
-      height: 300px;
-      width: 100%;
-    }
+      tr.grade-row-b {
+        background-color: rgba(51, 182, 121, 0.1);
+      }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-    }
+      tr.grade-row-c {
+        background-color: rgba(244, 180, 0, 0.1);
+      }
 
-    th, td {
-      padding: 12px 15px;
-      text-align: left;
-      border-bottom: 1px solid #ddd;
-    }
+      tr.grade-row-d {
+        background-color: rgba(230, 124, 115, 0.1);
+      }
 
-    th {
-      background-color: #f2f2f2;
-      position: sticky;
-      top: 0;
-    }
+      tr.grade-row-f {
+        background-color: rgba(162, 162, 162, 0.1);
+      }
 
-    tr:hover {
-      background-color: #f5f5f5;
-    }
-    
-    tr.grade-row-a-plus {
-      background-color: rgba(66, 133, 244, 0.1);
-    }
-    
-    tr.grade-row-a {
-      background-color: rgba(94, 151, 246, 0.1);
-    }
-    
-    tr.grade-row-b {
-      background-color: rgba(51, 182, 121, 0.1);
-    }
-    
-    tr.grade-row-c {
-      background-color: rgba(244, 180, 0, 0.1);
-    }
-    
-    tr.grade-row-d {
-      background-color: rgba(230, 124, 115, 0.1);
-    }
-    
-    tr.grade-row-f {
-      background-color: rgba(162, 162, 162, 0.1);
-    }
-    
-    tr.grade-row-p {
-      background-color: rgba(121, 134, 203, 0.1);
-    }
-    
-    tr.non-gpa {
-      font-style: italic;
-      color: #666;
-    }
+      tr.grade-row-p {
+        background-color: rgba(121, 134, 203, 0.1);
+      }
 
-    .grade-pill {
-      display: inline-block;
-      padding: 4px 8px;
-      border-radius: 12px;
-      color: white;
-      font-weight: bold;
-      text-align: center;
-      min-width: 30px;
-    }
+      tr.non-gpa {
+        font-style: italic;
+        color: #666;
+      }
 
-    .grade-A\+ { background-color: var(--color-a-plus); }
-    .grade-A { background-color: var(--color-a); }
-    .grade-B { background-color: var(--color-b); }
-    .grade-C { background-color: var(--color-c); }
-    .grade-D { background-color: var(--color-d); }
-    .grade-F { background-color: var(--color-f); }
-    .grade-P { background-color: var(--color-p); }
+      .grade-pill {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 12px;
+        color: white;
+        font-weight: bold;
+        text-align: center;
+        min-width: 30px;
+      }
 
-    .filter-group button {
-      padding: 8px 16px;
-      background-color: white;
-      border: 1px solid #ddd;
-      border-radius: 20px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
+      .grade-A\+ {
+        background-color: var(--color-a-plus);
+      }
+      .grade-A {
+        background-color: var(--color-a);
+      }
+      .grade-B {
+        background-color: var(--color-b);
+      }
+      .grade-C {
+        background-color: var(--color-c);
+      }
+      .grade-D {
+        background-color: var(--color-d);
+      }
+      .grade-F {
+        background-color: var(--color-f);
+      }
+      .grade-P {
+        background-color: var(--color-p);
+      }
 
-    .filter-group button:hover {
-      background-color: #f0f0f0;
-    }
+      .filter-group button {
+        padding: 8px 16px;
+        background-color: white;
+        border: 1px solid #ddd;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
 
-    .filter-group button.active {
-      background-color: #1a73e8;
-      color: white;
-      border-color: #1a73e8;
-    }
-  </style>
-</head>
-<body>
-  <h1>筑田大学成績</h1>
+      .filter-group button:hover {
+        background-color: #f0f0f0;
+      }
 
-  <div class="filters">
-    <div class="filter-group semester-filter">
-      <span class="filter-label">学期:</span>
-      <button class="active" data-filter-type="semester" data-filter="all">すべての学期</button>
-      <button data-filter-type="semester" data-filter="春学期">春学期</button>
-      <button data-filter-type="semester" data-filter="秋学期">秋学期</button>
+      .filter-group button.active {
+        background-color: #1a73e8;
+        color: white;
+        border-color: #1a73e8;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>筑田大学成績</h1>
+
+    <div class="filters">
+      <div class="filter-group semester-filter">
+        <span class="filter-label">学期:</span>
+        <button class="active" data-filter-type="semester" data-filter="all"
+          >すべての学期</button
+        >
+        <button data-filter-type="semester" data-filter="春学期">春学期</button>
+        <button data-filter-type="semester" data-filter="秋学期">秋学期</button>
+      </div>
+
+      <div class="filter-group year-filter">
+        <span class="filter-label">年度:</span>
+        <button class="active" data-filter-type="year" data-filter="all"
+          >すべての年度</button
+        >
+        <!-- 年度ボタンは動的に生成されます -->
+      </div>
     </div>
-    
-    <div class="filter-group year-filter">
-      <span class="filter-label">年度:</span>
-      <button class="active" data-filter-type="year" data-filter="all">すべての年度</button>
-      <!-- 年度ボタンは動的に生成されます -->
-    </div>
-  </div>
 
-  <div class="container">
-    <div class="card gpa-card">
-      <div class="gpa-value" id="gpa-value">0.00</div>
-      <div class="gpa-details">
-        <div id="credits-earned">修得単位数: 0.0</div>
-        <div id="gpa-credits">GPA計算対象単位数: 0.0</div>
+    <div class="container">
+      <div class="card gpa-card">
+        <div class="gpa-value" id="gpa-value">0.00</div>
+        <div class="gpa-details">
+          <div id="credits-earned">修得単位数: 0.0</div>
+          <div id="gpa-credits">GPA計算対象単位数: 0.0</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="chart-container">
+          <canvas id="grade-distribution"></canvas>
+        </div>
       </div>
     </div>
 
     <div class="card">
-      <div class="chart-container">
-        <canvas id="grade-distribution"></canvas>
+      <div style="overflow-x: auto;">
+        <table id="grades-table">
+          <thead>
+            <tr>
+              <th>科目番号</th>
+              <th>科目名</th>
+              <th>単位数</th>
+              <th>成績</th>
+              <th>評点</th>
+              <th>学期</th>
+              <th>年度</th>
+              <th>主担当教員</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
       </div>
     </div>
-  </div>
 
-  <div class="card">
-    <div style="overflow-x: auto;">
-      <table id="grades-table">
-        <thead>
-          <tr>
-            <th>科目番号</th>
-            <th>科目名</th>
-            <th>単位数</th>
-            <th>成績</th>
-            <th>評点</th>
-            <th>学期</th>
-            <th>年度</th>
-            <th>主担当教員</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+      // Chart.js用の型宣言を追加
+      declare const Chart: any;
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script>
-    // Chart.js用の型宣言を追加
-    declare const Chart: any;
-    
-    // Define interfaces for type safety
-    interface GradeRecord {
-      科目番号?: string;
-      科目名?: string;
-      単位数?: string | number;
-      総合?: string;
-      評点?: string | number;
-      学期?: string;
-      年度?: string;
-      主担当教員?: string;
-      科目区分?: string;
-      [key: string]: any; // For additional properties
-    }
-
-    interface FilterState {
-      semester: string;
-      year: string;
-    }
-
-    // Grade point mapping
-    interface GradePointMap {
-      [key: string]: number | null;
-    }
-
-    // Grade color mapping
-    interface GradeColorMap {
-      [key: string]: string;
-    }
-
-    // Distribution data structure
-    interface GradeDistribution {
-      [key: string]: number;
-    }
-
-    // Chart.jsの型定義拡張
-    interface ChartInstance {
-      data: any;
-      update: () => void;
-    }
-
-    // windowにgradeDistributionChartプロパティを追加
-    declare global {
-      interface Window {
-        gradeDistributionChart?: ChartInstance;
+      // Define interfaces for type safety
+      interface GradeRecord {
+        科目番号?: string;
+        科目名?: string;
+        単位数?: string | number;
+        総合?: string;
+        評点?: string | number;
+        学期?: string;
+        年度?: string;
+        主担当教員?: string;
+        科目区分?: string;
+        [key: string]: any; // For additional properties
       }
-    }
 
-    // 成績データ
-    let gradesData: GradeRecord[] = [];
+      interface FilterState {
+        semester: string;
+        year: string;
+      }
 
-    // 成績のGPAマッピング
-    const gradeToGP: GradePointMap = {
-      'A+': 4.3,
-      'A': 4.0,
-      'B': 3.0,
-      'C': 2.0,
-      'D': 0.0,
-      'F': null, // GPA計算から除外
-      'P': null  // GPA計算から除外
-    };
+      // Grade point mapping
+      interface GradePointMap {
+        [key: string]: number | null;
+      }
 
-    // 成績の色マッピング - 直接色の値を指定
-    const gradeColors: GradeColorMap = {
-      'A+': '#4285F4', // var(--color-a-plus) の代わり
-      'A': '#5E97F6',  // var(--color-a) の代わり
-      'B': '#33B679',  // var(--color-b) の代わり
-      'C': '#F4B400',  // var(--color-c) の代わり
-      'D': '#E67C73',  // var(--color-d) の代わり
-      'F': '#A2A2A2',  // var(--color-f) の代わり
-      'P': '#7986CB'   // var(--color-p) の代わり
-    };
+      // Grade color mapping
+      interface GradeColorMap {
+        [key: string]: string;
+      }
 
-    // 現在のフィルター状態
-    const currentFilters: FilterState = {
-      semester: 'all',
-      year: 'all'
-    };
-    
-    // 初期データの読み込み
-    document.addEventListener('DOMContentLoaded', async () => {
-      try {
-        // データをAPIから取得
-        const response = await fetch('https://grades.mizuame.app/api/grades');
-        if (!response.ok) {
-          throw new Error('APIからのデータ取得に失敗しました');
+      // Distribution data structure
+      interface GradeDistribution {
+        [key: string]: number;
+      }
+
+      // Chart.jsの型定義拡張
+      interface ChartInstance {
+        data: any;
+        update: () => void;
+      }
+
+      // windowにgradeDistributionChartプロパティを追加
+      declare global {
+        interface Window {
+          gradeDistributionChart?: ChartInstance;
         }
+      }
 
-        const responseData = await response.json();
-        
-        // データが配列でない場合の処理
-        if (!Array.isArray(responseData)) {
-          console.error('取得したデータが配列ではありません');
-          gradesData = [];
-        } else {
-          gradesData = responseData as GradeRecord[];
-        }
-        
-        // 年度フィルターを動的に生成
-        generateYearFilters(gradesData);
+      // 成績データ
+      let gradesData: GradeRecord[] = [];
 
-        // データを表示
-        updateUI();
+      // 成績のGPAマッピング
+      const gradeToGP: GradePointMap = {
+        "A+": 4.3,
+        A: 4.0,
+        B: 3.0,
+        C: 2.0,
+        D: 0.0,
+        F: null, // GPA計算から除外
+        P: null, // GPA計算から除外
+      };
 
-        // フィルターイベントリスナーを設定
-        document.querySelectorAll('.filter-group button').forEach(button => {
-          (button as HTMLButtonElement).addEventListener('click', () => {
-            const filterType = (button as HTMLButtonElement).dataset.filterType;
-            const filterValue = (button as HTMLButtonElement).dataset.filter || '';
-            
-            if (!filterType) return;
-            
-            // 同じタイプのボタンから active クラスを削除
-            document.querySelectorAll(`.filter-group button[data-filter-type="${filterType}"]`)
-              .forEach(b => b.classList.remove('active'));
-            
-            // クリックされたボタンに active クラスを追加
-            button.classList.add('active');
-            
-            // フィルター状態を更新
-            if (filterType === 'semester' || filterType === 'year') {
-              currentFilters[filterType as keyof FilterState] = filterValue;
-            }
-            
-            // UIを更新
-            updateUI();
-          });
-        });
-      } catch (error) {
-        console.error('データの読み込みに失敗しました:', error instanceof Error ? error.message : String(error));
-        document.body.innerHTML = `
+      // 成績の色マッピング - 直接色の値を指定
+      const gradeColors: GradeColorMap = {
+        "A+": "#4285F4", // var(--color-a-plus) の代わり
+        A: "#5E97F6", // var(--color-a) の代わり
+        B: "#33B679", // var(--color-b) の代わり
+        C: "#F4B400", // var(--color-c) の代わり
+        D: "#E67C73", // var(--color-d) の代わり
+        F: "#A2A2A2", // var(--color-f) の代わり
+        P: "#7986CB", // var(--color-p) の代わり
+      };
+
+      // 現在のフィルター状態
+      const currentFilters: FilterState = {
+        semester: "all",
+        year: "all",
+      };
+
+      // 初期データの読み込み
+      document.addEventListener("DOMContentLoaded", async () => {
+        try {
+          // データをAPIから取得
+          const response = await fetch("https://grades.mizuame.app/api/grades");
+          if (!response.ok) {
+            throw new Error("APIからのデータ取得に失敗しました");
+          }
+
+          const responseData = await response.json();
+
+          // データが配列でない場合の処理
+          if (!Array.isArray(responseData)) {
+            console.error("取得したデータが配列ではありません");
+            gradesData = [];
+          } else {
+            gradesData = responseData as GradeRecord[];
+          }
+
+          // 年度フィルターを動的に生成
+          generateYearFilters(gradesData);
+
+          // データを表示
+          updateUI();
+
+          // フィルターイベントリスナーを設定
+          document
+            .querySelectorAll(".filter-group button")
+            .forEach((button) => {
+              (button as HTMLButtonElement).addEventListener("click", () => {
+                const filterType = (button as HTMLButtonElement).dataset
+                  .filterType;
+                const filterValue =
+                  (button as HTMLButtonElement).dataset.filter || "";
+
+                if (!filterType) return;
+
+                // 同じタイプのボタンから active クラスを削除
+                document
+                  .querySelectorAll(
+                    `.filter-group button[data-filter-type="${filterType}"]`
+                  )
+                  .forEach((b) => b.classList.remove("active"));
+
+                // クリックされたボタンに active クラスを追加
+                button.classList.add("active");
+
+                // フィルター状態を更新
+                if (filterType === "semester" || filterType === "year") {
+                  currentFilters[filterType as keyof FilterState] = filterValue;
+                }
+
+                // UIを更新
+                updateUI();
+              });
+            });
+        } catch (error) {
+          console.error(
+            "データの読み込みに失敗しました:",
+            error instanceof Error ? error.message : String(error)
+          );
+          document.body.innerHTML = `
           <div style="text-align: center; padding: 50px;">
             <h2>エラー</h2>
             <p>データの読み込みに失敗しました。</p>
             <p>${error instanceof Error ? error.message : String(error)}</p>
           </div>
         `;
-        return;
-      }
-    });
-
-    // 年度フィルターを生成する関数
-    function generateYearFilters(data: GradeRecord[]): void {
-      // 利用可能な年度の一覧を取得
-      const years = [...new Set(data.map(course => course.年度).filter(Boolean))].sort();
-      
-      // 年度フィルターのコンテナを取得
-      const yearFilterContainer = document.querySelector('.year-filter');
-      
-      if (!yearFilterContainer) return;
-      
-      // 年度ボタンを生成
-      years.forEach(year => {
-        if (!year) return;
-        
-        const button = document.createElement('button');
-        button.dataset.filterType = 'year';
-        button.dataset.filter = String(year);
-        button.textContent = String(year);
-        yearFilterContainer.appendChild(button);
-      });
-    }
-    
-    // UIを更新する関数
-    function updateUI(): void {
-      // フィルタリングされたデータを取得
-      const filteredData = filterData(gradesData);
-      
-      // 成績テーブルを更新
-      updateTable(filteredData);
-      
-      // GPA計算と表示を更新
-      calculateAndDisplayGPA(filteredData);
-      
-      // グラフを更新
-      updateCharts(filteredData);
-    }
-
-    // データをフィルタリングする関数
-    function filterData(data: GradeRecord[]): GradeRecord[] {
-      return data.filter(course => {
-        // 学期フィルター
-        const semesterMatch = currentFilters.semester === 'all' || course.学期 === currentFilters.semester;
-        
-        // 年度フィルター
-        const yearMatch = currentFilters.year === 'all' || course.年度 === currentFilters.year;
-        
-        return semesterMatch && yearMatch;
-      });
-    }
-
-    // 成績テーブルを更新する関数
-    function updateTable(data: GradeRecord[]): void {
-      const tableBody = document.querySelector('#grades-table tbody');
-      
-      if (!tableBody) return;
-      
-      tableBody.innerHTML = '';
-      
-      data.forEach(course => {
-        const row = document.createElement('tr');
-        
-        // 成績に応じたクラスを追加
-        if (course.総合) {
-          const grade = String(course.総合).replace('+', '-plus').toLowerCase();
-          row.classList.add(`grade-row-${grade}`);
-        }
-        
-        // GPA計算対象外の科目にはクラスを付与
-        if (course.科目区分 && String(course.科目区分).includes('GPA計算対象外科目')) {
-          row.classList.add('non-gpa');
-        }
-        
-        row.innerHTML = `
-          <td>${course.科目番号 || '-'}</td>
-          <td>${course.科目名 || '-'}</td>
-          <td>${course.単位数 || '-'}</td>
-          <td><span class="grade-pill grade-${course.総合 || 'F'}">${course.総合 || '-'}</span></td>
-          <td>${course.評点 || '-'}</td>
-          <td>${course.学期 || '-'}</td>
-          <td>${course.年度 || '-'}</td>
-          <td>${course.主担当教員 || '-'}</td>
-        `;
-        
-        tableBody.appendChild(row);
-      });
-    }
-
-    // GPAを計算して表示する関数
-    function calculateAndDisplayGPA(data: GradeRecord[]): void {
-      let totalGradePoints = 0;
-      let totalCredits = 0;
-      let totalGPACredits = 0;
-      let totalEarnedCredits = 0;
-      
-      data.forEach(course => {
-        // 単位数を数値に変換
-        const credits = parseFloat(String(course.単位数)) || 0;
-        
-        // 単位を獲得した科目（D以上）
-        if (course.総合 && course.総合 !== 'F') {
-          totalEarnedCredits += credits;
-        }
-        
-        // GPA計算対象外の科目はスキップ
-        if (course.科目区分 && String(course.科目区分).includes('GPA計算対象外科目')) {
           return;
         }
-        
-        // 成績からGPを取得
-        const gradePoint = course.総合 && course.総合 in gradeToGP ? gradeToGP[course.総合] : null;
-        
-        // GPがnullでない場合（F、P以外）のみGPA計算に含める
-        if (gradePoint !== null && gradePoint !== undefined) {
-          totalGradePoints += gradePoint * credits;
-          totalGPACredits += credits;
-        }
       });
-      
-      // GPA計算
-      const gpa = totalGPACredits > 0 ? (totalGradePoints / totalGPACredits) : 0;
-      
-      // GPA表示
-      const gpaElement = document.getElementById('gpa-value');
-      const creditsEarnedElement = document.getElementById('credits-earned');
-      const gpaCreditsElement = document.getElementById('gpa-credits');
-      
-      if (gpaElement) {
-        gpaElement.textContent = gpa.toFixed(2);
-      }
-      
-      if (creditsEarnedElement) {
-        creditsEarnedElement.textContent = `修得単位数: ${totalEarnedCredits.toFixed(1)}`;
-      }
-      
-      if (gpaCreditsElement) {
-        gpaCreditsElement.textContent = `GPA計算対象単位数: ${totalGPACredits.toFixed(1)}`;
-      }
-    }
 
-    // グラフを更新する関数
-    function updateCharts(data: GradeRecord[]): void {
-      // 成績分布データを作成
-      const gradeDistribution: GradeDistribution = {
-        'A+': 0,
-        'A': 0,
-        'B': 0,
-        'C': 0,
-        'D': 0,
-        'F': 0,
-        'P': 0
-      };
-      
-      // GPA計算対象の科目のみをカウント
-      data.filter(course => !(course.科目区分 && String(course.科目区分).includes('GPA計算対象外科目')))
-        .forEach(course => {
-          if (course.総合 && course.総合 in gradeDistribution) {
-            gradeDistribution[course.総合]++;
+      // 年度フィルターを生成する関数
+      function generateYearFilters(data: GradeRecord[]): void {
+        // 利用可能な年度の一覧を取得
+        const years = [
+          ...new Set(data.map((course) => course.年度).filter(Boolean)),
+        ].sort();
+
+        // 年度フィルターのコンテナを取得
+        const yearFilterContainer = document.querySelector(".year-filter");
+
+        if (!yearFilterContainer) return;
+
+        // 年度ボタンを生成
+        years.forEach((year) => {
+          if (!year) return;
+
+          const button = document.createElement("button");
+          button.dataset.filterType = "year";
+          button.dataset.filter = String(year);
+          button.textContent = String(year);
+          yearFilterContainer.appendChild(button);
+        });
+      }
+
+      // UIを更新する関数
+      function updateUI(): void {
+        // フィルタリングされたデータを取得
+        const filteredData = filterData(gradesData);
+
+        // 成績テーブルを更新
+        updateTable(filteredData);
+
+        // GPA計算と表示を更新
+        calculateAndDisplayGPA(filteredData);
+
+        // グラフを更新
+        updateCharts(filteredData);
+      }
+
+      // データをフィルタリングする関数
+      function filterData(data: GradeRecord[]): GradeRecord[] {
+        return data.filter((course) => {
+          // 学期フィルター
+          const semesterMatch =
+            currentFilters.semester === "all" ||
+            course.学期 === currentFilters.semester;
+
+          // 年度フィルター
+          const yearMatch =
+            currentFilters.year === "all" ||
+            course.年度 === currentFilters.year;
+
+          return semesterMatch && yearMatch;
+        });
+      }
+
+      // 成績テーブルを更新する関数
+      function updateTable(data: GradeRecord[]): void {
+        const tableBody = document.querySelector("#grades-table tbody");
+
+        if (!tableBody) return;
+
+        tableBody.innerHTML = "";
+
+        data.forEach((course) => {
+          const row = document.createElement("tr");
+
+          // 成績に応じたクラスを追加
+          if (course.総合) {
+            const grade = String(course.総合)
+              .replace("+", "-plus")
+              .toLowerCase();
+            row.classList.add(`grade-row-${grade}`);
+          }
+
+          // GPA計算対象外の科目にはクラスを付与
+          if (
+            course.科目区分 &&
+            String(course.科目区分).includes("GPA計算対象外科目")
+          ) {
+            row.classList.add("non-gpa");
+          }
+
+          row.innerHTML = `
+          <td>${course.科目番号 || "-"}</td>
+          <td>${course.科目名 || "-"}</td>
+          <td>${course.単位数 || "-"}</td>
+          <td><span class="grade-pill grade-${course.総合 || "F"}">${course.総合 || "-"}</span></td>
+          <td>${course.評点 || "-"}</td>
+          <td>${course.学期 || "-"}</td>
+          <td>${course.年度 || "-"}</td>
+          <td>${course.主担当教員 || "-"}</td>
+        `;
+
+          tableBody.appendChild(row);
+        });
+      }
+
+      // GPAを計算して表示する関数
+      function calculateAndDisplayGPA(data: GradeRecord[]): void {
+        let totalGradePoints = 0;
+        let totalCredits = 0;
+        let totalGPACredits = 0;
+        let totalEarnedCredits = 0;
+
+        data.forEach((course) => {
+          // 単位数を数値に変換
+          const credits = parseFloat(String(course.単位数)) || 0;
+
+          // 単位を獲得した科目（C以上）- DとF両方を除外
+          if (course.総合 && course.総合 !== "F" && course.総合 !== "D") {
+            totalEarnedCredits += credits;
+          }
+
+          // GPA計算対象外の科目はスキップ
+          if (
+            course.科目区分 &&
+            String(course.科目区分).includes("GPA計算対象外科目")
+          ) {
+            return;
+          }
+
+          // 成績からGPを取得
+          const gradePoint =
+            course.総合 && course.総合 in gradeToGP
+              ? gradeToGP[course.総合]
+              : null;
+
+          // GPがnullでない場合（F、P以外）のみGPA計算に含める
+          if (gradePoint !== null && gradePoint !== undefined) {
+            totalGradePoints += gradePoint * credits;
+            totalGPACredits += credits;
           }
         });
-      
-      // グラフの更新または作成
-      const canvas = document.getElementById('grade-distribution');
-      if (!canvas || !(canvas instanceof HTMLCanvasElement)) return;
-      
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
-      
-      if (window.gradeDistributionChart) {
-        window.gradeDistributionChart.data.datasets[0].data = Object.values(gradeDistribution);
-        window.gradeDistributionChart.update();
-      } else {
-        // デバッグ情報を出力
-        console.log('グラフ色情報:', gradeColors);
-        console.log('グラフデータ:', Object.values(gradeDistribution));
-        
-        // Create a new chart with fixed colors
-        window.gradeDistributionChart = new Chart(ctx, {
-          type: 'bar',
-          data: {
-            labels: Object.keys(gradeDistribution),
-            datasets: [{
-              label: '成績分布',
-              data: Object.values(gradeDistribution),
-              backgroundColor: [
-                '#4285F4', // A+
-                '#5E97F6', // A
-                '#33B679', // B
-                '#F4B400', // C
-                '#E67C73', // D
-                '#A2A2A2', // F
-                '#7986CB'  // P
-              ],
-              borderColor: [
-                '#4285F4', // A+
-                '#5E97F6', // A
-                '#33B679', // B
-                '#F4B400', // C
-                '#E67C73', // D
-                '#A2A2A2', // F
-                '#7986CB'  // P
-              ],
-              borderWidth: 1
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-              y: {
-                beginAtZero: true,
-                ticks: {
-                  stepSize: 1
-                }
-              }
-            } as any,
-            plugins: {
-              legend: {
-                display: false
-              },
-              tooltip: {
-                callbacks: {
-                  label: function(context: any) {
-                    const grade = context.label;
-                    const count = context.raw;
-                    const gp = grade in gradeToGP && gradeToGP[grade] !== null ? `(${gradeToGP[grade]})` : '';
-                    return `${grade} ${gp}: ${count}科目`;
-                  }
-                }
-              }
-            }
-          }
-        }) as ChartInstance;
+
+        // GPA計算
+        const gpa =
+          totalGPACredits > 0 ? totalGradePoints / totalGPACredits : 0;
+
+        // GPA表示
+        const gpaElement = document.getElementById("gpa-value");
+        const creditsEarnedElement = document.getElementById("credits-earned");
+        const gpaCreditsElement = document.getElementById("gpa-credits");
+
+        if (gpaElement) {
+          gpaElement.textContent = gpa.toFixed(2);
+        }
+
+        if (creditsEarnedElement) {
+          creditsEarnedElement.textContent = `修得単位数: ${totalEarnedCredits.toFixed(1)}`;
+        }
+
+        if (gpaCreditsElement) {
+          gpaCreditsElement.textContent = `GPA計算対象単位数: ${totalGPACredits.toFixed(1)}`;
+        }
       }
-    }
-  </script>
-</body>
+
+      // グラフを更新する関数
+      function updateCharts(data: GradeRecord[]): void {
+        // 成績分布データを作成
+        const gradeDistribution: GradeDistribution = {
+          "A+": 0,
+          A: 0,
+          B: 0,
+          C: 0,
+          D: 0,
+          F: 0,
+          P: 0,
+        };
+
+        // GPA計算対象の科目のみをカウント
+        data
+          .filter(
+            (course) =>
+              !(
+                course.科目区分 &&
+                String(course.科目区分).includes("GPA計算対象外科目")
+              )
+          )
+          .forEach((course) => {
+            if (course.総合 && course.総合 in gradeDistribution) {
+              gradeDistribution[course.総合]++;
+            }
+          });
+
+        // グラフの更新または作成
+        const canvas = document.getElementById("grade-distribution");
+        if (!canvas || !(canvas instanceof HTMLCanvasElement)) return;
+
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
+
+        if (window.gradeDistributionChart) {
+          window.gradeDistributionChart.data.datasets[0].data =
+            Object.values(gradeDistribution);
+          window.gradeDistributionChart.update();
+        } else {
+          // デバッグ情報を出力
+          console.log("グラフ色情報:", gradeColors);
+          console.log("グラフデータ:", Object.values(gradeDistribution));
+
+          // Create a new chart with fixed colors
+          window.gradeDistributionChart = new Chart(ctx, {
+            type: "bar",
+            data: {
+              labels: Object.keys(gradeDistribution),
+              datasets: [
+                {
+                  label: "成績分布",
+                  data: Object.values(gradeDistribution),
+                  backgroundColor: [
+                    "#4285F4", // A+
+                    "#5E97F6", // A
+                    "#33B679", // B
+                    "#F4B400", // C
+                    "#E67C73", // D
+                    "#A2A2A2", // F
+                    "#7986CB", // P
+                  ],
+                  borderColor: [
+                    "#4285F4", // A+
+                    "#5E97F6", // A
+                    "#33B679", // B
+                    "#F4B400", // C
+                    "#E67C73", // D
+                    "#A2A2A2", // F
+                    "#7986CB", // P
+                  ],
+                  borderWidth: 1,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  ticks: {
+                    stepSize: 1,
+                  },
+                },
+              } as any,
+              plugins: {
+                legend: {
+                  display: false,
+                },
+                tooltip: {
+                  callbacks: {
+                    label: function (context: any) {
+                      const grade = context.label;
+                      const count = context.raw;
+                      const gp =
+                        grade in gradeToGP && gradeToGP[grade] !== null
+                          ? `(${gradeToGP[grade]})`
+                          : "";
+                      return `${grade} ${gp}: ${count}科目`;
+                    },
+                  },
+                },
+              },
+            },
+          }) as ChartInstance;
+        }
+      }
+    </script>
+  </body>
 </html>
