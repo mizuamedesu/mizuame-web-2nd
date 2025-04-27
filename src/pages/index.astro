@@ -3,6 +3,48 @@ import BaseHead from "../components/BaseHead.astro";
 import Footer from "../components/Footer.astro";
 import { SITE_TITLE, SITE_DESCRIPTION } from "../consts";
 import { getCollection } from "astro:content";
+import BootLoader from '../components/BootLoader.astro';
+
+const customBootText = `
+Loading Astro Boot Manager...
+Cloudflare Workers System v2025.04
+Initializing system components...
+[OK] CPU Architecture: wasm32-unknown-unknown
+[OK] Memory: 512MB ephemeral RAM (scalable)
+[OK] Storage: R2 / KV Namespaces mounted
+[OK] Network Interface: edge-router0 (10Gbps)
+[OK] DNS Resolver: 1.1.1.1 / 2606:4700:4700::1111
+[OK] TLS Handshake: Established (TLS 1.3)
+[OK] Fetching environment bindings...
+[OK] V8 Engine: v11.9 (isolated contexts)
+[OK] Astro Runtime: version 4.2.0
+[OK] Worker Limits: 50ms CPU burst / 10ms sustained
+[OK] Entrypoint: src/entry.ts
+[OK] Loading Island components...
+[OK] Preloading static assets...
+[OK] Setting up SSR pipelines...
+[OK] Activating middleware handlers...
+[OK] Enabling global fetch polyfill
+[OK] Session storage: In-memory fallback
+[OK] Hydration Engine: Turbo mode active
+[OK] Route manifest compiled: 17 routes
+[OK] Service manifest signed and verified
+[OK] Live update listener: active
+[OK] Error handling system armed
+[OK] Logging facility: JSON structured logs
+[OK] Worker scoped caching: enabled
+[OK] Astro Renderer: React / Solid / Svelte ready
+System initialization complete.
+Welcome to mizuame.works Portfolio!
+
+██     ██ ███████  ██████  ██████  ███    ███ ███████ 
+██     ██ ██      ██      ██    ██ ████  ████ ██      
+██  █  ██ █████   ██      ██    ██ ██ ████ ██ █████   
+██ ███ ██ ██      ██      ██    ██ ██  ██  ██ ██      
+ ███ ███  ███████  ██████  ██████  ██      ██ ███████ 
+
+root@mizuame.works:~# _
+`;
 
 // ブログ記事を取得し、日付順にソートして最新3件を取得
 const posts = (await getCollection("blog"))
@@ -17,6 +59,7 @@ const posts = (await getCollection("blog"))
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
   </head>
   <body>
+    <BootLoader bootText={customBootText} />
     <div class="win95-container">
       <div class="win95-window">
         <div class="win95-titlebar">
