@@ -1,9 +1,10 @@
 ---
 import BaseHead from "../components/BaseHead.astro";
 import Footer from "../components/Footer.astro";
+import Banner from "../components/Banner.astro";
 import { SITE_TITLE, SITE_DESCRIPTION } from "../consts";
 import { getCollection } from "astro:content";
-import BootLoader from '../components/BootLoader.astro';
+import BootLoader from "../components/BootLoader.astro";
 
 const customBootText = `
 Welcome to mizuame.works Portfolio!
@@ -21,20 +22,51 @@ root@mizuame.works:~# _
 const posts = (await getCollection("blog"))
   .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
   .slice(0, 3);
+
+// バナー情報の配列
+const banners = [
+  {
+    src: "banner/mizuame_banner.png",
+    alt: "みずあめのポートフォリオ",
+    href: "https://mizuame.works/",
+    title: "みずあめのポートフォリオ",
+  },
+  {
+    src: "banner/zikannai.png",
+    alt: "時間ねぇー",
+    href: "https://sites.google.com/view/happy-busy/",
+    title: "時間ねぇー",
+  },
+  {
+    src: "banner/powerfulfamily.net_banner.png",
+    alt: "豪族.net",
+    href: "https://powerfulfamily.net",
+    title: "豪族.net",
+  },
+  {
+    src: "banner/whatacotton_banner.png",
+    alt: "WhatACottonの備忘録",
+    href: "https://blog.whatacotton.com",
+    title: "WhatACottonの備忘録",
+  },
+];
 ---
 
 <!doctype html>
 <html lang="ja">
   <head>
     <BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
-    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <link
+      href="https://fonts.googleapis.com/css2?family=VT323&display=swap"
+      rel="stylesheet"
+    />
   </head>
   <body>
     <BootLoader bootText={customBootText} />
     <div class="win95-container">
       <div class="win95-window">
         <div class="win95-titlebar">
-          <div class="win95-title">みずあめのホームページ</div>
+          <div class="win95-title">みずあめのポートフォリオ</div>
           <div class="win95-controls">
             <button class="win95-btn minimize">_</button>
             <button class="win95-btn maximize">□</button>
@@ -43,23 +75,26 @@ const posts = (await getCollection("blog"))
         </div>
         <div class="win95-content">
           <div class="text-section">
-            <div class="win95-text large-text">そろそろカスのソフトを作るのやめたい</div>
+            <div class="win95-text large-text">
+              そろそろカスのソフトを作るのやめたい
+            </div>
           </div>
-          
+
           <div class="win95-section">
             <div class="win95-section-title">About</div>
             <div class="win95-fieldset">
               <div class="win95-text">本名: 佐藤 良</div>
               <div class="win95-text">所属: 筑波大学情報科学類B2</div>
               <div class="win95-text">肩書き: テクニカルアーティスト</div>
-              <a href="https://md.mizuame.app/s/eqetPj34C" class="win95-link">詳しくはこちらをご覧ください</a>
+              <a href="https://md.mizuame.app/s/eqetPj34C" class="win95-link"
+                >詳しくはこちらをご覧ください</a
+              >
             </div>
           </div>
-          
+
           <div class="win95-section">
             <div class="win95-section-title">ブログ</div>
             <div class="win95-fieldset">
-              <!-- 最新3件のブログ記事を表示 -->
               <div class="blog-section">
                 <ul>
                   {
@@ -68,7 +103,9 @@ const posts = (await getCollection("blog"))
                         <a href={`/blog/${post.id}/`}>
                           <div class="win95-blog-item">
                             <h4 class="post-title">{post.data.title}</h4>
-                            <p class="post-description">{post.data.description}</p>
+                            <p class="post-description">
+                              {post.data.description}
+                            </p>
                             <p class="post-date">
                               {post.data.pubDate.toLocaleDateString("ja-JP")}
                             </p>
@@ -79,31 +116,36 @@ const posts = (await getCollection("blog"))
                   }
                 </ul>
 
-                <!-- ブログ一覧へのリンク -->
                 <div class="view-all-button">
                   <a href="/blog" class="win95-button">ブログ一覧を見る</a>
                 </div>
               </div>
             </div>
           </div>
-          
+
           <div class="win95-section">
             <div class="win95-section-title">スライド</div>
             <div class="win95-fieldset">
-              <a href="https://www.docswell.com/user/mizuame" class="win95-link">Docswell</a>
+              <a href="https://www.docswell.com/user/mizuame" class="win95-link"
+                >Docswell</a
+              >
             </div>
           </div>
-          
+
           <div class="win95-section">
             <div class="win95-section-title">コンタクト</div>
             <div class="win95-fieldset">
               <div class="win95-text">hello at mizuame.works</div>
               <div class="win95-button-container">
-                <a href="https://mizuame.works/grades" class="win95-button">成績</a>
+                <a href="https://mizuame.works/grades" class="win95-button"
+                  >成績</a
+                >
               </div>
             </div>
           </div>
-          
+
+          <Banner banners={banners} />
+
           <div class="footer-section">
             <Footer />
           </div>
@@ -125,12 +167,10 @@ const posts = (await getCollection("blog"))
     padding: 0;
     overflow-x: hidden;
     min-height: 100vh;
-    background-color: #008080; /* Windows 95 teal background */
-    font-family: 'MS Sans Serif', 'VT323', monospace;
+    background-color: #008080;
+    font-family: "MS Sans Serif", "VT323", monospace;
     color: #000;
   }
-
-  
 
   .win95-container {
     position: relative;
@@ -145,15 +185,17 @@ const posts = (await getCollection("blog"))
   .win95-window {
     width: 100%;
     max-width: 800px;
-    background-color: #c0c0c0; /* Classic Win95 gray */
+    background-color: #c0c0c0;
     border: 2px solid #000;
-    box-shadow: inset 1px 1px #dfdfdf, inset -1px -1px #0a0a0a, 1px 1px #000;
+    box-shadow:
+      inset 1px 1px #dfdfdf,
+      inset -1px -1px #0a0a0a,
+      1px 1px #000;
   }
 
   .win95-titlebar {
     height: 22px;
-    background: linear-gradient(90deg, #000080, #1084d0); /* Windows 95 titlebar blue */
-    color: white;
+    background: linear-gradient(90deg, #000080, #1084d0);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -180,7 +222,9 @@ const posts = (await getCollection("blog"))
     border-left: 1px solid #fff;
     border-right: 1px solid #000;
     border-bottom: 1px solid #000;
-    box-shadow: inset 1px 1px #dfdfdf, inset -1px -1px #808080;
+    box-shadow:
+      inset 1px 1px #dfdfdf,
+      inset -1px -1px #808080;
     font-size: 8px;
     display: flex;
     justify-content: center;
@@ -190,14 +234,14 @@ const posts = (await getCollection("blog"))
 
   .win95-content {
     padding: 10px;
-    background-color: #c0c0c0; /* 背景色をここに追加 */
+    background-color: #c0c0c0;
   }
 
   .text-section {
     width: 100%;
     text-align: center;
     padding: 1rem 0;
-    background-color: #c0c0c0; /* Windows 95グレーの背景色 */
+    background-color: #c0c0c0;
   }
 
   .win95-text {
@@ -283,7 +327,8 @@ const posts = (await getCollection("blog"))
     margin-top: 10px;
   }
 
-  .win95-button, .view-all-button a {
+  .win95-button,
+  .view-all-button a {
     display: inline-block;
     background-color: #c0c0c0;
     color: #000;
@@ -296,7 +341,8 @@ const posts = (await getCollection("blog"))
     text-align: center;
   }
 
-  .win95-button:active, .view-all-button a:active {
+  .win95-button:active,
+  .view-all-button a:active {
     border-color: #808080 #ffffff #ffffff #808080;
   }
 

@@ -1,0 +1,116 @@
+---
+// components/Banner.astro
+export interface Banner {
+  src: string;
+  alt: string;
+  href: string;
+  title?: string;
+}
+
+export interface Props {
+  banners: Banner[];
+}
+
+const { banners } = Astro.props;
+---
+
+{banners && banners.length > 0 && (
+  <div class="banner-section">
+    <div class="win95-section-title">バナー(相互募集中)</div>
+    <div class="win95-fieldset">
+      <div class="banner-grid">
+        {
+          banners.map((banner) => (
+            <a 
+              href={banner.href} 
+              class="banner-link" 
+              title={banner.title || banner.alt}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <img 
+                src={banner.src} 
+                alt={banner.alt}
+                class="banner-image"
+                loading="lazy"
+              />
+            </a>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+)}
+
+<style>
+  .banner-section {
+    margin: 15px 0;
+  }
+
+  .win95-section-title {
+    font-weight: bold;
+    font-size: 1.2rem;
+    margin-bottom: 5px;
+  }
+
+  .win95-fieldset {
+    border: 2px solid;
+    border-color: #808080 #ffffff #ffffff #808080;
+    padding: 10px;
+    background-color: #c0c0c0;
+  }
+
+  .banner-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .banner-link {
+    display: inline-block;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+    padding: 2px;
+  }
+
+  .banner-link:hover {
+    border: 1px solid #0000ff;
+    background-color: #e0e0e0;
+  }
+
+  .banner-link:active {
+    border: 1px solid #000080;
+    background-color: #d0d0d0;
+  }
+
+  .banner-image {
+    display: block;
+    width: 200px;
+    height: 50px;
+    object-fit: contain;
+    border: none;
+  }
+
+  /* レスポンシブ対応 */
+  @media (max-width: 600px) {
+    .banner-grid {
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    .banner-image {
+      width: 180px;
+      height: 45px;
+    }
+  }
+
+  @media (max-width: 400px) {
+    .banner-image {
+      width: 160px;
+      height: 40px;
+    }
+  }
+</style>
