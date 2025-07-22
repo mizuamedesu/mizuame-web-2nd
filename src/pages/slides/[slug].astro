@@ -217,7 +217,7 @@ const { filename, title } = Astro.props;
     text-align: center;
   }
 
-  /* 擬似全画面オーバーレイ */
+  /* 擬似全画面オーバーレイ（モバイルのみ） */
   .pseudo-fullscreen-overlay {
     display: none;
     position: fixed;
@@ -231,8 +231,11 @@ const { filename, title } = Astro.props;
     overflow: hidden;
   }
 
-  .pseudo-fullscreen-overlay.active {
-    display: flex;
+  /* モバイル時のみ擬似全画面を有効にする */
+  @media (max-width: 768px), (hover: none) and (pointer: coarse) {
+    .pseudo-fullscreen-overlay.active {
+      display: flex;
+    }
   }
 
   .pseudo-fullscreen-container {
@@ -539,8 +542,8 @@ const { filename, title } = Astro.props;
         // タッチイベント（通常のcanvas）
         this.bindTouchEvents(this.canvas);
 
-        // タッチイベント（擬似全画面canvas）
-        if (this.pseudoCanvas) {
+        // タッチイベント（擬似全画面canvas - モバイルのみ）
+        if (this.isMobile && this.pseudoCanvas) {
           this.bindTouchEvents(this.pseudoCanvas);
         }
 
@@ -626,14 +629,17 @@ const { filename, title } = Astro.props;
           return;
         }
 
-        // 通常のcanvasをレンダリング
-        if (!this.isPseudoFullscreen) {
-          await this.renderToCanvas(this.canvas, this.context, false);
+        // PCの場合：従来通り通常のcanvasのみを使用
+        if (!this.isMobile) {
+          await this.renderToCanvas(this.canvas, this.context, this.isFullscreen);
+          return;
         }
 
-        // 擬似全画面の場合は擬似全画面canvasをレンダリング
+        // モバイルの場合：擬似全画面と通常表示を切り替え
         if (this.isPseudoFullscreen && this.pseudoCanvas && this.pseudoContext) {
           await this.renderToCanvas(this.pseudoCanvas, this.pseudoContext, true);
+        } else {
+          await this.renderToCanvas(this.canvas, this.context, false);
         }
       }
 
@@ -744,13 +750,13 @@ const { filename, title } = Astro.props;
       }
 
       async toggleFullscreen() {
-        // モバイルまたはFullscreen APIが利用できない場合は擬似全画面を使用
-        if (this.isMobile || !this.slideContainer?.requestFullscreen) {
+        // モバイルの場合は擬似全画面を使用
+        if (this.isMobile) {
           this.enterPseudoFullscreen();
           return;
         }
 
-        // デスクトップの場合は通常の全画面API
+        // PC/デスクトップの場合は通常の全画面APIのみを使用
         if (!this.slideContainer) return;
 
         try {
@@ -765,13 +771,12 @@ const { filename, title } = Astro.props;
           }
         } catch (error) {
           console.error("全画面表示の切り替えに失敗しました:", error);
-          // フォールバックとして擬似全画面を使用
-          this.enterPseudoFullscreen();
         }
       }
 
       enterPseudoFullscreen() {
-        if (this.isPseudoFullscreen) return;
+        // PC時は擬似全画面を使用しない
+        if (!this.isMobile || this.isPseudoFullscreen) return;
 
         this.isPseudoFullscreen = true;
         
@@ -788,7 +793,8 @@ const { filename, title } = Astro.props;
       }
 
       exitPseudoFullscreen() {
-        if (!this.isPseudoFullscreen) return;
+        // PC時は擬似全画面を使用しない
+        if (!this.isMobile || !this.isPseudoFullscreen) return;
 
         this.isPseudoFullscreen = false;
 
@@ -826,7 +832,8 @@ const { filename, title } = Astro.props;
         }
 
         // 全画面状態が変わったらページを再描画
-        if (!this.isPseudoFullscreen) {
+        // PC時は常に再描画、モバイル時は擬似全画面でない場合のみ再描画
+        if (!this.isMobile || !this.isPseudoFullscreen) {
           this.renderPage();
         }
       }
