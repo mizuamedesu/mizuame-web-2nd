@@ -38,6 +38,11 @@ const { filename, title } = Astro.props;
       <h1>{title}</h1>
     </div>
     
+    <div class="slide-container" id="slide-container">
+      <div id="loading">スライドを読み込み中...</div>
+      <canvas id="pdf-canvas"></canvas>
+    </div>
+    
     <div class="slide-controls">
       <button id="prev-page" disabled>前のページ</button>
       <span id="page-info">
@@ -48,11 +53,6 @@ const { filename, title } = Astro.props;
         <button id="download-btn" title="PDFをダウンロード">ダウンロード</button>
         <button id="fullscreen-btn" title="全画面表示">全画面</button>
       </div>
-    </div>
-    
-    <div class="slide-container" id="slide-container">
-      <div id="loading">スライドを読み込み中...</div>
-      <canvas id="pdf-canvas"></canvas>
     </div>
     
     <!-- 全画面時のコントロール -->
@@ -87,8 +87,9 @@ const { filename, title } = Astro.props;
     display: flex;
     align-items: center;
     gap: 1rem;
-    margin-bottom: 2rem;
+    margin-top: 2rem;
     flex-wrap: wrap;
+    justify-content: center;
   }
   
   .slide-controls button {
@@ -236,6 +237,12 @@ const { filename, title } = Astro.props;
       align-items: stretch;
     }
     
+    /* モバイル時は次へ・戻るボタンを非表示 */
+    #prev-page,
+    #next-page {
+      display: none;
+    }
+    
     .action-buttons {
       margin-left: 0;
       justify-content: center;
@@ -244,6 +251,12 @@ const { filename, title } = Astro.props;
     .slide-controls button {
       padding: 0.75rem 1rem;
       font-size: 1rem;
+    }
+    
+    #page-info {
+      text-align: center;
+      margin-bottom: 1rem;
+      font-size: 1.1rem;
     }
     
     .fullscreen-controls {
