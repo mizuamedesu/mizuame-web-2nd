@@ -1,11 +1,11 @@
 ---
 // src/pages/slides/index.astro
-import { readdir } from 'fs/promises';
-import path from 'path';
-import Layout from '../../layouts/SlideLayout.astro';
+import { readdir } from "fs/promises";
+import path from "path";
+import Layout from "../../layouts/SlideLayout.astro";
 
 // public/slides フォルダからPDFファイルを取得
-const slidesDir = path.join(process.cwd(), 'public/slides');
+const slidesDir = path.join(process.cwd(), "public/slides");
 
 interface Slide {
   name: string;
@@ -20,26 +20,28 @@ let slides: Slide[] = [];
 try {
   const files = await readdir(slidesDir);
   slides = files
-    .filter(file => file.endsWith('.pdf'))
-    .map(file => {
-      const name = file.replace('.pdf', '');
+    .filter((file) => file.endsWith(".pdf"))
+    .map((file) => {
+      const name = file.replace(".pdf", "");
       // ファイル名から日付を抽出（YYYY-MM-DD形式）
       const dateMatch = name.match(/^(\d{4}-\d{2}-\d{2})/);
       const date = dateMatch ? dateMatch[1] : undefined;
-      
+
       // 表示用タイトルを生成（日付部分を除去し、ハイフンをスペースに）
       let displayTitle = name;
       if (date) {
-        displayTitle = name.replace(/^\d{4}-\d{2}-\d{2}-?/, '');
+        displayTitle = name.replace(/^\d{4}-\d{2}-\d{2}-?/, "");
       }
-      displayTitle = displayTitle.replace(/-/g, ' ').replace(/([a-z])([A-Z])/g, '$1 $2');
-      
+      displayTitle = displayTitle
+        .replace(/-/g, " ")
+        .replace(/([a-z])([A-Z])/g, "$1 $2");
+
       return {
         name,
         filename: file,
         path: `/slides/${file}`,
         displayTitle: displayTitle || name,
-        date
+        date,
       };
     })
     .sort((a, b) => {
@@ -50,54 +52,65 @@ try {
       return b.name.localeCompare(a.name);
     });
 } catch (error) {
-  console.log('slides フォルダが存在しないか、読み取りできません');
+  console.log("slides フォルダが存在しないか、読み取りできません");
 }
 ---
 
 <Layout title="スライド一覧" description="発表スライドのアーカイブ">
   <div class="container">
     <div class="header">
-        <h1>スライド一覧</h1>
+      <h1>スライド一覧</h1>
     </div>
-    
-    {slides.length === 0 ? (
-      <div class="empty-state">
-        <div class="empty-icon">📄</div>
-        <h2>まだスライドがありません</h2>
-        <p>public/slides/ フォルダにPDFファイルを配置してください。</p>
-      </div>
-    ) : (
-      <div class="slides-grid">
-        {slides.map(slide => (
-          <article class="slide-card">
-            <a href={`/slides/${slide.name}`} class="card-link">
-              <div class="slide-preview" id={`preview-${slide.name}`} data-filename={slide.filename}>
-                <div class="loading-placeholder">
-                  <div class="loading-spinner"></div>
-                  <span>プレビュー読み込み中...</span>
+
+    {
+      slides.length === 0 ? (
+        <div class="empty-state">
+          <div class="empty-icon">📄</div>
+          <h2>まだスライドがありません</h2>
+          <p>public/slides/ フォルダにPDFファイルを配置してください。</p>
+        </div>
+      ) : (
+        <div class="slides-grid">
+          {slides.map((slide) => (
+            <article class="slide-card">
+              <a href={`/slides/${slide.name}`} class="card-link">
+                <div
+                  class="slide-preview"
+                  id={`preview-${slide.name}`}
+                  data-filename={slide.filename}
+                >
+                  <div class="loading-placeholder">
+                    <div class="loading-spinner" />
+                    <span>プレビュー読み込み中...</span>
+                  </div>
                 </div>
-              </div>
-              <div class="slide-info">
-                <h3 class="slide-title">{slide.displayTitle}</h3>
-                {slide.date && (
-                  <time class="slide-date" datetime={slide.date}>
-                    {new Date(slide.date).toLocaleDateString('ja-JP', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    })}
-                  </time>
-                )}
-                <div class="slide-meta">
-                  <span class="pages-count" id={`pages-${slide.name}`}>-- ページ</span>
-                  <span class="file-format">PDF</span>
+                <div class="slide-info">
+                  <h3 class="slide-title">{slide.displayTitle}</h3>
+                  {slide.date && (
+                    <time class="slide-date" datetime={slide.date}>
+                      {new Date(slide.date).toLocaleDateString("ja-JP", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })}
+                    </time>
+                  )}
+                  <div class="slide-meta">
+                    <span class="pages-count" id={`pages-${slide.name}`}>
+                      -- ページ
+                    </span>
+                    <span class="file-format">PDF</span>
+                  </div>
                 </div>
-              </div>
-            </a>
-          </article>
-        ))}
-      </div>
-    )}
+              </a>
+            </article>
+          ))}
+        </div>
+      )
+    }
+  </div>
+  <div class="back-to-top">
+    <a href="/">トップへ戻る</a>
   </div>
 </Layout>
 
@@ -107,19 +120,19 @@ try {
     margin: 0 auto;
     padding: 2rem 1rem;
   }
-  
+
   .header {
     text-align: center;
     margin-bottom: 3rem;
   }
-  
+
   .header h1 {
     font-size: 2.5rem;
     margin: 0 0 1rem 0;
     color: #2c3e50;
     font-weight: 700;
   }
-  
+
   .description {
     font-size: 1.1rem;
     color: #666;
@@ -127,31 +140,31 @@ try {
     margin: 0 auto;
     line-height: 1.6;
   }
-  
+
   .empty-state {
     text-align: center;
     padding: 4rem 2rem;
     color: #666;
   }
-  
+
   .empty-icon {
     font-size: 4rem;
     margin-bottom: 1rem;
   }
-  
+
   .empty-state h2 {
     font-size: 1.5rem;
     margin: 0 0 1rem 0;
     color: #444;
   }
-  
+
   .slides-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
     gap: 2rem;
     margin-top: 2rem;
   }
-  
+
   .slide-card {
     background: white;
     border-radius: 12px;
@@ -159,17 +172,17 @@ try {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     border: 1px solid #e1e8ed;
   }
-  
+
   .slide-card:hover {
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
   }
-  
+
   .card-link {
     display: block;
     text-decoration: none;
     color: inherit;
   }
-  
+
   .slide-preview {
     width: 100%;
     height: 240px;
@@ -180,13 +193,13 @@ try {
     overflow: hidden;
     position: relative;
   }
-  
+
   .slide-preview canvas {
     width: 100%;
     height: 100%;
     object-fit: contain;
   }
-  
+
   .loading-placeholder {
     display: flex;
     flex-direction: column;
@@ -194,7 +207,7 @@ try {
     gap: 1rem;
     color: #666;
   }
-  
+
   .loading-spinner {
     width: 40px;
     height: 40px;
@@ -202,11 +215,11 @@ try {
     border-top: 3px solid #3498db;
     border-radius: 50%;
   }
-  
+
   .slide-info {
     padding: 1.5rem;
   }
-  
+
   .slide-title {
     font-size: 1.25rem;
     font-weight: 600;
@@ -218,14 +231,14 @@ try {
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
-  
+
   .slide-date {
     font-size: 0.9rem;
     color: #666;
     margin-bottom: 1rem;
     display: block;
   }
-  
+
   .slide-meta {
     display: flex;
     justify-content: space-between;
@@ -233,7 +246,7 @@ try {
     font-size: 0.85rem;
     color: #888;
   }
-  
+
   .pages-count {
     background: #e8f4f8;
     color: #2980b9;
@@ -241,7 +254,7 @@ try {
     border-radius: 4px;
     font-weight: 500;
   }
-  
+
   .file-format {
     background: #f0f0f0;
     color: #666;
@@ -251,29 +264,48 @@ try {
     text-transform: uppercase;
     font-size: 0.75rem;
   }
-  
+
   .error {
     color: #e74c3c;
     font-size: 0.9rem;
     text-align: center;
     padding: 1rem;
   }
-  
+
+  .back-to-top {
+    text-align: center;
+    margin-top: 2em;
+    margin-bottom: 2em;
+  }
+  .back-to-top a {
+    display: inline-block;
+    padding: 0.75em 1.5em;
+    background: rgb(var(--accent));
+    color: #000000;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 1rem;
+    font-weight: bold;
+  }
+  .back-to-top a:hover {
+    background: rgb(var(--accent-dark));
+  }
+
   /* レスポンシブ対応 */
   @media (max-width: 768px) {
     .container {
       padding: 1rem;
     }
-    
+
     .slides-grid {
       grid-template-columns: 1fr;
       gap: 1.5rem;
     }
-    
+
     .header h1 {
       font-size: 2rem;
     }
-    
+
     .slide-preview {
       height: 200px;
     }
@@ -281,73 +313,74 @@ try {
 </style>
 
 <script>
-  document.addEventListener('DOMContentLoaded', async () => {
+  document.addEventListener("DOMContentLoaded", async () => {
     // PDF.js はCDNから読み込み済み（グローバルのpdfjsLibを使用）
     const pdfjsLib = (window as any).pdfjsLib;
     if (!pdfjsLib) {
-      console.error('PDF.js が読み込まれていません');
+      console.error("PDF.js が読み込まれていません");
       return;
     }
-    
+
     // PDF.js worker の設定
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-    
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
     // 各スライドの最初のページのプレビューを生成
-    const slideCards = document.querySelectorAll('.slide-card');
-    
+    const slideCards = document.querySelectorAll(".slide-card");
+
     for (const card of slideCards) {
-      const previewDiv = card.querySelector('.slide-preview');
-      const pagesSpan = card.querySelector('.pages-count');
-      
+      const previewDiv = card.querySelector(".slide-preview");
+      const pagesSpan = card.querySelector(".pages-count");
+
       if (!previewDiv) {
-        console.warn('プレビュー要素が見つかりません', card);
+        console.warn("プレビュー要素が見つかりません", card);
         continue;
       }
-      
-      const filename = previewDiv.getAttribute('data-filename');
+
+      const filename = previewDiv.getAttribute("data-filename");
       if (!filename) {
-        console.warn('ファイル名が見つかりません', card);
+        console.warn("ファイル名が見つかりません", card);
         continue;
       }
-      
+
       try {
         const pdf = await pdfjsLib.getDocument(`/slides/${filename}`).promise;
         const page = await pdf.getPage(1);
-        
+
         // ページ数を更新
         if (pagesSpan) {
           pagesSpan.textContent = `${pdf.numPages} ページ`;
         }
-        
-        const canvas = document.createElement('canvas');
-        const context = canvas.getContext('2d');
-        
+
+        const canvas = document.createElement("canvas");
+        const context = canvas.getContext("2d");
+
         if (!context) {
-          console.error('Canvas context の取得に失敗しました');
+          console.error("Canvas context の取得に失敗しました");
           previewDiv.innerHTML = '<div class="error">Canvas エラー</div>';
           continue;
         }
-        
+
         // プレビューサイズに合わせてスケーリング
         const viewport = page.getViewport({ scale: 1.0 });
         const scale = Math.min(350 / viewport.width, 240 / viewport.height);
         const scaledViewport = page.getViewport({ scale });
-        
+
         canvas.height = scaledViewport.height;
         canvas.width = scaledViewport.width;
-        
+
         await page.render({
           canvasContext: context,
-          viewport: scaledViewport
+          viewport: scaledViewport,
         }).promise;
-        
-        previewDiv.innerHTML = '';
+
+        previewDiv.innerHTML = "";
         previewDiv.appendChild(canvas);
-        
       } catch (error) {
         console.error(`プレビュー生成エラー (${filename}):`, error);
         if (previewDiv) {
-          previewDiv.innerHTML = '<div class="error">プレビュー読み込みエラー</div>';
+          previewDiv.innerHTML =
+            '<div class="error">プレビュー読み込みエラー</div>';
         }
       }
     }
