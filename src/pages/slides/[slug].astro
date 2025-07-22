@@ -44,16 +44,25 @@ const { filename, title } = Astro.props;
         <span id="current-page">1</span> / <span id="total-pages">-</span>
       </span>
       <button id="next-page" disabled>次のページ</button>
-      <div class="zoom-controls">
-        <button id="zoom-out">−</button>
-        <span id="zoom-level">100%</span>
-        <button id="zoom-in">+</button>
+      <div class="action-buttons">
+        <button id="download-btn" title="PDFをダウンロード">ダウンロード</button>
+        <button id="fullscreen-btn" title="全画面表示">全画面</button>
       </div>
     </div>
     
-    <div class="slide-container">
+    <div class="slide-container" id="slide-container">
       <div id="loading">スライドを読み込み中...</div>
       <canvas id="pdf-canvas"></canvas>
+    </div>
+    
+    <!-- 全画面時のコントロール -->
+    <div class="fullscreen-controls" id="fullscreen-controls">
+      <button id="fs-prev" title="前のページ">‹</button>
+      <span id="fs-page-info">
+        <span id="fs-current-page">1</span> / <span id="fs-total-pages">-</span>
+      </span>
+      <button id="fs-next" title="次のページ">›</button>
+      <button id="fs-exit" title="全画面終了">✕</button>
     </div>
   </main>
 </Layout>
@@ -89,6 +98,7 @@ const { filename, title } = Astro.props;
     border-radius: 4px;
     cursor: pointer;
     font-size: 0.9rem;
+    transition: background-color 0.2s;
   }
   
   .slide-controls button:hover:not(:disabled) {
@@ -100,11 +110,22 @@ const { filename, title } = Astro.props;
     cursor: not-allowed;
   }
   
-  .zoom-controls {
+  .action-buttons {
     display: flex;
     align-items: center;
     gap: 0.5rem;
     margin-left: auto;
+  }
+  
+  #download-btn {
+    background: #17a2b8 !important;
+    color: white !important;
+    border-color: #138496 !important;
+  }
+  
+  #download-btn:hover:not(:disabled) {
+    background: #138496 !important;
+    border-color: #117a8b !important;
   }
   
   #page-info {
@@ -113,21 +134,20 @@ const { filename, title } = Astro.props;
     text-align: center;
   }
   
-  #zoom-level {
-    min-width: 50px;
-    text-align: center;
-    font-size: 0.9rem;
-  }
-  
   .slide-container {
     text-align: center;
     overflow: auto;
+    position: relative;
+    touch-action: pan-x pan-y;
   }
   
   #pdf-canvas {
     max-width: 100%;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15), 0 4px 8px rgba(0, 0, 0, 0.1);
     background: white;
+    border-radius: 8px;
+    user-select: none;
+    -webkit-user-select: none;
   }
   
   #loading {
@@ -141,6 +161,101 @@ const { filename, title } = Astro.props;
     font-size: 1.1rem;
     padding: 2rem;
   }
+  
+  /* 全画面コントロール */
+  .fullscreen-controls {
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    border-radius: 8px;
+    padding: 10px 15px;
+    gap: 15px;
+    align-items: center;
+    z-index: 1000;
+    color: white;
+  }
+  
+  .fullscreen-controls button {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.2s;
+  }
+  
+  .fullscreen-controls button:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+  
+  #fs-page-info {
+    font-weight: bold;
+    min-width: 60px;
+    text-align: center;
+  }
+  
+  /* 全画面時のスタイル */
+  .slide-container:fullscreen {
+    background: black;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .slide-container:fullscreen #pdf-canvas {
+    max-height: 100vh;
+    max-width: 100vw;
+    object-fit: contain;
+    box-shadow: 0 12px 32px rgba(255, 255, 255, 0.1), 0 8px 16px rgba(255, 255, 255, 0.05);
+  }
+  
+  /* WebKit用の全画面スタイル */
+  .slide-container:-webkit-full-screen {
+    background: black;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .slide-container:-webkit-full-screen #pdf-canvas {
+    max-height: 100vh;
+    max-width: 100vw;
+    object-fit: contain;
+    box-shadow: 0 12px 32px rgba(255, 255, 255, 0.1), 0 8px 16px rgba(255, 255, 255, 0.05);
+  }
+  
+  /* モバイル対応 */
+  @media (max-width: 768px) {
+    .slide-controls {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    
+    .action-buttons {
+      margin-left: 0;
+      justify-content: center;
+    }
+    
+    .slide-controls button {
+      padding: 0.75rem 1rem;
+      font-size: 1rem;
+    }
+    
+    .fullscreen-controls {
+      bottom: 10px;
+      padding: 8px 12px;
+    }
+    
+    .fullscreen-controls button {
+      padding: 10px 15px;
+      font-size: 18px;
+    }
+  }
 </style>
 
 <script define:vars={{ slug, filename }}>
@@ -153,193 +268,301 @@ const { filename, title } = Astro.props;
     
     // PDF.js worker の設定
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-    
-    // PDF.js worker の設定
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
   
-  class SlideViewer {
-    constructor() {
-      this.pdf = null;
-      this.currentPage = 1;
-      this.totalPages = 0;
-      this.scale = 1.0;
-      
-      const canvas = document.getElementById('pdf-canvas');
-      if (!canvas || !(canvas instanceof HTMLCanvasElement)) {
-        console.error('Canvas要素が見つかりません');
-        return;
-      }
-      
-      this.canvas = canvas;
-      const context = this.canvas.getContext('2d');
-      if (!context) {
-        console.error('Canvas context の取得に失敗しました');
-        return;
-      }
-      this.context = context;
-      
-      this.initializeElements();
-      this.bindEvents();
-      this.loadPDF();
-    }
-    
-    initializeElements() {
-      this.prevButton = document.getElementById('prev-page');
-      this.nextButton = document.getElementById('next-page');
-      this.currentPageSpan = document.getElementById('current-page');
-      this.totalPagesSpan = document.getElementById('total-pages');
-      this.zoomInButton = document.getElementById('zoom-in');
-      this.zoomOutButton = document.getElementById('zoom-out');
-      this.zoomLevelSpan = document.getElementById('zoom-level');
-      this.loadingDiv = document.getElementById('loading');
-      
-      // null チェック
-      if (!this.prevButton || !this.nextButton || !this.currentPageSpan || 
-          !this.totalPagesSpan || !this.zoomInButton || !this.zoomOutButton || 
-          !this.zoomLevelSpan || !this.loadingDiv) {
-        console.error('必要なUI要素が見つかりません');
-        return;
-      }
-    }
-    
-    bindEvents() {
-      if (!this.prevButton || !this.nextButton || !this.zoomInButton || !this.zoomOutButton) {
-        console.error('ボタン要素が見つかりません');
-        return;
-      }
-      
-      this.prevButton.addEventListener('click', () => this.goToPreviousPage());
-      this.nextButton.addEventListener('click', () => this.goToNextPage());
-      this.zoomInButton.addEventListener('click', () => this.zoomIn());
-      this.zoomOutButton.addEventListener('click', () => this.zoomOut());
-      
-      // キーボードショートカット
-      document.addEventListener('keydown', (e) => {
-        switch(e.key) {
-          case 'ArrowLeft':
-            e.preventDefault();
-            this.goToPreviousPage();
-            break;
-          case 'ArrowRight':
-            e.preventDefault();
-            this.goToNextPage();
-            break;
-          case '+':
-          case '=':
-            e.preventDefault();
-            this.zoomIn();
-            break;
-          case '-':
-            e.preventDefault();
-            this.zoomOut();
-            break;
+    class SlideViewer {
+      constructor() {
+        this.pdf = null;
+        this.currentPage = 1;
+        this.totalPages = 0;
+        this.touchStartX = 0;
+        this.touchStartY = 0;
+        this.isFullscreen = false;
+        
+        const canvas = document.getElementById('pdf-canvas');
+        if (!canvas || !(canvas instanceof HTMLCanvasElement)) {
+          console.error('Canvas要素が見つかりません');
+          return;
         }
-      });
-    }
-    
-    async loadPDF() {
-      if (!this.totalPagesSpan || !this.loadingDiv || !this.canvas) {
-        console.error('必要な要素が見つかりません');
-        return;
+        
+        this.canvas = canvas;
+        const context = this.canvas.getContext('2d');
+        if (!context) {
+          console.error('Canvas context の取得に失敗しました');
+          return;
+        }
+        this.context = context;
+        
+        this.initializeElements();
+        this.bindEvents();
+        this.loadPDF();
       }
       
-      try {
-        this.pdf = await pdfjsLib.getDocument(`/slides/${filename}`).promise;
-        this.totalPages = this.pdf.numPages;
-        this.totalPagesSpan.textContent = this.totalPages.toString();
+      initializeElements() {
+        this.prevButton = document.getElementById('prev-page');
+        this.nextButton = document.getElementById('next-page');
+        this.currentPageSpan = document.getElementById('current-page');
+        this.totalPagesSpan = document.getElementById('total-pages');
+        this.downloadButton = document.getElementById('download-btn');
+        this.fullscreenButton = document.getElementById('fullscreen-btn');
+        this.loadingDiv = document.getElementById('loading');
+        this.slideContainer = document.getElementById('slide-container');
         
-        this.loadingDiv.style.display = 'none';
-        this.canvas.style.display = 'block';
+        // 全画面コントロール
+        this.fullscreenControls = document.getElementById('fullscreen-controls');
+        this.fsPrevButton = document.getElementById('fs-prev');
+        this.fsNextButton = document.getElementById('fs-next');
+        this.fsCurrentPageSpan = document.getElementById('fs-current-page');
+        this.fsTotalPagesSpan = document.getElementById('fs-total-pages');
+        this.fsExitButton = document.getElementById('fs-exit');
         
-        await this.renderPage();
-        this.updateControls();
+        // null チェック
+        if (!this.prevButton || !this.nextButton || !this.currentPageSpan || 
+            !this.totalPagesSpan || !this.downloadButton || !this.fullscreenButton || 
+            !this.loadingDiv || !this.slideContainer) {
+          console.error('必要なUI要素が見つかりません');
+          return;
+        }
+      }
+      
+      bindEvents() {
+        if (!this.prevButton || !this.nextButton || !this.downloadButton || !this.fullscreenButton) {
+          console.error('ボタン要素が見つかりません');
+          return;
+        }
         
-      } catch (error) {
-        console.error('PDF読み込みエラー:', error);
-        this.loadingDiv.innerHTML = '<div class="error">スライドの読み込みに失敗しました</div>';
+        // 通常のコントロール
+        this.prevButton.addEventListener('click', () => this.goToPreviousPage());
+        this.nextButton.addEventListener('click', () => this.goToNextPage());
+        this.downloadButton.addEventListener('click', () => this.downloadPDF());
+        this.fullscreenButton.addEventListener('click', () => this.toggleFullscreen());
+        
+        // 全画面コントロール
+        if (this.fsPrevButton && this.fsNextButton && this.fsExitButton) {
+          this.fsPrevButton.addEventListener('click', () => this.goToPreviousPage());
+          this.fsNextButton.addEventListener('click', () => this.goToNextPage());
+          this.fsExitButton.addEventListener('click', () => this.exitFullscreen());
+        }
+        
+        // キーボードショートカット
+        document.addEventListener('keydown', (e) => {
+          switch(e.key) {
+            case 'ArrowLeft':
+              e.preventDefault();
+              this.goToPreviousPage();
+              break;
+            case 'ArrowRight':
+              e.preventDefault();
+              this.goToNextPage();
+              break;
+            case 'Escape':
+              if (this.isFullscreen) {
+                this.exitFullscreen();
+              }
+              break;
+            case 'f':
+            case 'F':
+              if (!this.isFullscreen) {
+                this.toggleFullscreen();
+              }
+              break;
+          }
+        });
+        
+        // タッチイベント（スワイプ操作）
+        this.canvas.addEventListener('touchstart', (e) => {
+          if (e.touches.length === 1) {
+            this.touchStartX = e.touches[0].clientX;
+            this.touchStartY = e.touches[0].clientY;
+          }
+        }, { passive: true });
+        
+        this.canvas.addEventListener('touchend', (e) => {
+          if (e.changedTouches.length === 1) {
+            const touchEndX = e.changedTouches[0].clientX;
+            const touchEndY = e.changedTouches[0].clientY;
+            
+            const deltaX = touchEndX - this.touchStartX;
+            const deltaY = touchEndY - this.touchStartY;
+            
+            // 水平方向のスワイプのみを判定（垂直方向のスクロールを除外）
+            if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50) {
+              if (deltaX > 0) {
+                this.goToPreviousPage(); // 右スワイプ：前のページ
+              } else {
+                this.goToNextPage(); // 左スワイプ：次のページ
+              }
+            }
+          }
+        }, { passive: true });
+        
+        // 全画面状態の監視
+        document.addEventListener('fullscreenchange', () => {
+          this.handleFullscreenChange();
+        });
+        document.addEventListener('webkitfullscreenchange', () => {
+          this.handleFullscreenChange();
+        });
+      }
+      
+      async loadPDF() {
+        if (!this.totalPagesSpan || !this.loadingDiv || !this.canvas) {
+          console.error('必要な要素が見つかりません');
+          return;
+        }
+        
+        try {
+          this.pdf = await pdfjsLib.getDocument(`/slides/${filename}`).promise;
+          this.totalPages = this.pdf.numPages;
+          this.totalPagesSpan.textContent = this.totalPages.toString();
+          
+          if (this.fsTotalPagesSpan) {
+            this.fsTotalPagesSpan.textContent = this.totalPages.toString();
+          }
+          
+          this.loadingDiv.style.display = 'none';
+          this.canvas.style.display = 'block';
+          
+          await this.renderPage();
+          this.updateControls();
+          
+        } catch (error) {
+          console.error('PDF読み込みエラー:', error);
+          this.loadingDiv.innerHTML = '<div class="error">スライドの読み込みに失敗しました</div>';
+        }
+      }
+      
+      async renderPage() {
+        if (!this.pdf || !this.canvas || !this.context) {
+          console.error('PDF、Canvas、または Context が利用できません');
+          return;
+        }
+        
+        const page = await this.pdf.getPage(this.currentPage);
+        
+        // コンテナの利用可能サイズを取得
+        const container = this.canvas.parentElement;
+        let containerWidth, containerHeight;
+        
+        if (this.isFullscreen) {
+          containerWidth = window.innerWidth;
+          containerHeight = window.innerHeight;
+        } else {
+          containerWidth = container.clientWidth;
+          containerHeight = window.innerHeight * 0.7;
+        }
+        
+        // PDFページの元のサイズを取得
+        const originalViewport = page.getViewport({ scale: 1.0 });
+        
+        // コンテナに収まるスケールを計算
+        const scaleX = containerWidth / originalViewport.width;
+        const scaleY = containerHeight / originalViewport.height;
+        const scale = Math.min(scaleX, scaleY);
+        
+        const viewport = page.getViewport({ scale: scale });
+        
+        this.canvas.height = viewport.height;
+        this.canvas.width = viewport.width;
+        
+        await page.render({
+          canvasContext: this.context,
+          viewport: viewport
+        }).promise;
+      }
+      
+      updateControls() {
+        if (this.currentPageSpan) {
+          this.currentPageSpan.textContent = this.currentPage.toString();
+        }
+        if (this.fsCurrentPageSpan) {
+          this.fsCurrentPageSpan.textContent = this.currentPage.toString();
+        }
+        
+        const isFirstPage = this.currentPage <= 1;
+        const isLastPage = this.currentPage >= this.totalPages;
+        
+        if (this.prevButton) {
+          this.prevButton.disabled = isFirstPage;
+        }
+        if (this.nextButton) {
+          this.nextButton.disabled = isLastPage;
+        }
+        if (this.fsPrevButton) {
+          this.fsPrevButton.disabled = isFirstPage;
+        }
+        if (this.fsNextButton) {
+          this.fsNextButton.disabled = isLastPage;
+        }
+      }
+      
+      async goToPreviousPage() {
+        if (this.currentPage > 1) {
+          this.currentPage--;
+          await this.renderPage();
+          this.updateControls();
+        }
+      }
+      
+      async goToNextPage() {
+        if (this.currentPage < this.totalPages) {
+          this.currentPage++;
+          await this.renderPage();
+          this.updateControls();
+        }
+      }
+      
+      downloadPDF() {
+        const link = document.createElement('a');
+        link.href = `/slides/${filename}`;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+      
+      async toggleFullscreen() {
+        if (!this.slideContainer) return;
+        
+        try {
+          if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+            if (this.slideContainer.requestFullscreen) {
+              await this.slideContainer.requestFullscreen();
+            } else if (this.slideContainer.webkitRequestFullscreen) {
+              await this.slideContainer.webkitRequestFullscreen();
+            }
+          } else {
+            this.exitFullscreen();
+          }
+        } catch (error) {
+          console.error('全画面表示の切り替えに失敗しました:', error);
+        }
+      }
+      
+      async exitFullscreen() {
+        try {
+          if (document.exitFullscreen) {
+            await document.exitFullscreen();
+          } else if (document.webkitExitFullscreen) {
+            await document.webkitExitFullscreen();
+          }
+        } catch (error) {
+          console.error('全画面終了に失敗しました:', error);
+        }
+      }
+      
+      handleFullscreenChange() {
+        this.isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement);
+        
+        if (this.fullscreenControls) {
+          this.fullscreenControls.style.display = this.isFullscreen ? 'flex' : 'none';
+        }
+        
+        // 全画面状態が変わったらページを再描画
+        this.renderPage();
       }
     }
     
-    async renderPage() {
-  if (!this.pdf || !this.canvas || !this.context) {
-    console.error('PDF、Canvas、または Context が利用できません');
-    return;
-  }
-  
-  const page = await this.pdf.getPage(this.currentPage);
-  
-  // コンテナの利用可能サイズを取得
-  const container = this.canvas.parentElement;
-  const containerWidth = container.clientWidth; // paddingなしなので引かない
-  const containerHeight = window.innerHeight * 0.7; // 画面の70%
-  
-  // PDFページの元のサイズを取得
-  const originalViewport = page.getViewport({ scale: 1.0 });
-  
-  // コンテナに収まるスケールを計算
-  const scaleX = containerWidth / originalViewport.width;
-  const scaleY = containerHeight / originalViewport.height;
-  const autoScale = Math.min(scaleX, scaleY);
-  
-  // ユーザーのズーム操作を考慮した最終スケール
-  const finalScale = autoScale * this.scale;
-  
-  const viewport = page.getViewport({ scale: finalScale });
-  
-  this.canvas.height = viewport.height;
-  this.canvas.width = viewport.width;
-  
-  await page.render({
-    canvasContext: this.context,
-    viewport: viewport
-  }).promise;
-}
-    
-    updateControls() {
-      if (this.currentPageSpan) {
-        this.currentPageSpan.textContent = this.currentPage.toString();
-      }
-      if (this.prevButton) {
-        this.prevButton.disabled = this.currentPage <= 1;
-      }
-      if (this.nextButton) {
-        this.nextButton.disabled = this.currentPage >= this.totalPages;
-      }
-      if (this.zoomLevelSpan) {
-        this.zoomLevelSpan.textContent = Math.round(this.scale * 100) + '%';
-      }
-    }
-    
-    async goToPreviousPage() {
-      if (this.currentPage > 1) {
-        this.currentPage--;
-        await this.renderPage();
-        this.updateControls();
-      }
-    }
-    
-    async goToNextPage() {
-      if (this.currentPage < this.totalPages) {
-        this.currentPage++;
-        await this.renderPage();
-        this.updateControls();
-      }
-    }
-    
-    async zoomIn() {
-      this.scale = Math.min(this.scale * 1.25, 3.0);
-      await this.renderPage();
-      this.updateControls();
-    }
-    
-    async zoomOut() {
-      this.scale = Math.max(this.scale * 0.8, 0.5);
-      await this.renderPage();
-      this.updateControls();
-    }
-  }
-  
-  // ページ読み込み完了後にビューアーを初期化
-  new SlideViewer();
+    // ページ読み込み完了後にビューアーを初期化
+    new SlideViewer();
   });
 </script>
