@@ -50,8 +50,7 @@ const { filename, title } = Astro.props;
       </span>
       <button id="next-page" disabled>次のページ</button>
       <div class="action-buttons">
-        <button id="download-btn" title="PDFをダウンロード">ダウンロード</button
-        >
+        <button id="download-btn" title="PDFをダウンロード">ダウンロード</button>
         <button id="fullscreen-btn" title="全画面表示">全画面</button>
       </div>
     </div>
@@ -64,6 +63,21 @@ const { filename, title } = Astro.props;
       </span>
       <button id="fs-next" title="次のページ">›</button>
       <button id="fs-exit" title="全画面終了">✕</button>
+    </div>
+
+    <!-- 擬似全画面オーバーレイ -->
+    <div class="pseudo-fullscreen-overlay" id="pseudo-fullscreen-overlay">
+      <div class="pseudo-fullscreen-container" id="pseudo-fullscreen-container">
+        <canvas id="pseudo-fullscreen-canvas"></canvas>
+        <div class="pseudo-fullscreen-controls">
+          <button id="pfs-prev" title="前のページ">‹</button>
+          <span id="pfs-page-info">
+            <span id="pfs-current-page">1</span> / <span id="pfs-total-pages">-</span>
+          </span>
+          <button id="pfs-next" title="次のページ">›</button>
+          <button id="pfs-exit" title="全画面終了">✕</button>
+        </div>
+      </div>
     </div>
   </main>
 </Layout>
@@ -166,7 +180,7 @@ const { filename, title } = Astro.props;
     padding: 2rem;
   }
 
-  /* 全画面コントロール */
+  /* 通常の全画面コントロール */
   .fullscreen-controls {
     display: none;
     position: fixed;
@@ -203,7 +217,87 @@ const { filename, title } = Astro.props;
     text-align: center;
   }
 
-  /* 全画面時のスタイル */
+  /* 擬似全画面オーバーレイ */
+  .pseudo-fullscreen-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh; /* iOS Safariのため */
+    background: black;
+    z-index: 9999;
+    overflow: hidden;
+  }
+
+  .pseudo-fullscreen-overlay.active {
+    display: flex;
+  }
+
+  .pseudo-fullscreen-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+  }
+
+  #pseudo-fullscreen-canvas {
+    max-width: 100vw;
+    max-height: 100vh;
+    max-height: 100dvh; /* iOS Safariのため */
+    object-fit: contain;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  .pseudo-fullscreen-controls {
+    position: absolute;
+    bottom: env(safe-area-inset-bottom, 20px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    border-radius: 8px;
+    padding: 12px 18px;
+    display: flex;
+    gap: 18px;
+    align-items: center;
+    color: white;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+  .pseudo-fullscreen-controls button {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 18px;
+    transition: background-color 0.2s;
+    min-width: 44px; /* タッチしやすいサイズ */
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .pseudo-fullscreen-controls button:hover,
+  .pseudo-fullscreen-controls button:active {
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  #pfs-page-info {
+    font-weight: bold;
+    min-width: 80px;
+    text-align: center;
+    font-size: 16px;
+  }
+
+  /* 通常の全画面時のスタイル */
   .slide-container:fullscreen {
     background: black;
     display: flex;
@@ -237,6 +331,14 @@ const { filename, title } = Astro.props;
       0 8px 16px rgba(255, 255, 255, 0.05);
   }
 
+  /* 擬似全画面時のbody固定 */
+  body.pseudo-fullscreen-active {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+  }
+
   /* モバイル対応 */
   @media (max-width: 768px) {
     .slide-controls {
@@ -267,13 +369,15 @@ const { filename, title } = Astro.props;
     }
 
     .fullscreen-controls {
-      bottom: 10px;
+      bottom: env(safe-area-inset-bottom, 10px);
       padding: 8px 12px;
     }
 
     .fullscreen-controls button {
-      padding: 10px 15px;
-      font-size: 18px;
+      padding: 12px 18px;
+      font-size: 20px;
+      min-width: 44px;
+      min-height: 44px;
     }
   }
 </style>
@@ -298,6 +402,8 @@ const { filename, title } = Astro.props;
         this.touchStartX = 0;
         this.touchStartY = 0;
         this.isFullscreen = false;
+        this.isPseudoFullscreen = false;
+        this.isMobile = this.detectMobile();
 
         const canvas = document.getElementById("pdf-canvas");
         if (!canvas || !(canvas instanceof HTMLCanvasElement)) {
@@ -313,9 +419,21 @@ const { filename, title } = Astro.props;
         }
         this.context = context;
 
+        // 擬似全画面用のcanvas
+        const pseudoCanvas = document.getElementById("pseudo-fullscreen-canvas");
+        if (pseudoCanvas && pseudoCanvas instanceof HTMLCanvasElement) {
+          this.pseudoCanvas = pseudoCanvas;
+          this.pseudoContext = this.pseudoCanvas.getContext("2d");
+        }
+
         this.initializeElements();
         this.bindEvents();
         this.loadPDF();
+      }
+
+      detectMobile() {
+        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+               (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); // iPad Pro detection
       }
 
       initializeElements() {
@@ -328,15 +446,21 @@ const { filename, title } = Astro.props;
         this.loadingDiv = document.getElementById("loading");
         this.slideContainer = document.getElementById("slide-container");
 
-        // 全画面コントロール
-        this.fullscreenControls = document.getElementById(
-          "fullscreen-controls"
-        );
+        // 通常の全画面コントロール
+        this.fullscreenControls = document.getElementById("fullscreen-controls");
         this.fsPrevButton = document.getElementById("fs-prev");
         this.fsNextButton = document.getElementById("fs-next");
         this.fsCurrentPageSpan = document.getElementById("fs-current-page");
         this.fsTotalPagesSpan = document.getElementById("fs-total-pages");
         this.fsExitButton = document.getElementById("fs-exit");
+
+        // 擬似全画面コントロール
+        this.pseudoFullscreenOverlay = document.getElementById("pseudo-fullscreen-overlay");
+        this.pfsPrevButton = document.getElementById("pfs-prev");
+        this.pfsNextButton = document.getElementById("pfs-next");
+        this.pfsCurrentPageSpan = document.getElementById("pfs-current-page");
+        this.pfsTotalPagesSpan = document.getElementById("pfs-total-pages");
+        this.pfsExitButton = document.getElementById("pfs-exit");
 
         // null チェック
         if (
@@ -366,26 +490,23 @@ const { filename, title } = Astro.props;
         }
 
         // 通常のコントロール
-        this.prevButton.addEventListener("click", () =>
-          this.goToPreviousPage()
-        );
+        this.prevButton.addEventListener("click", () => this.goToPreviousPage());
         this.nextButton.addEventListener("click", () => this.goToNextPage());
         this.downloadButton.addEventListener("click", () => this.downloadPDF());
-        this.fullscreenButton.addEventListener("click", () =>
-          this.toggleFullscreen()
-        );
+        this.fullscreenButton.addEventListener("click", () => this.toggleFullscreen());
 
-        // 全画面コントロール
+        // 通常の全画面コントロール
         if (this.fsPrevButton && this.fsNextButton && this.fsExitButton) {
-          this.fsPrevButton.addEventListener("click", () =>
-            this.goToPreviousPage()
-          );
-          this.fsNextButton.addEventListener("click", () =>
-            this.goToNextPage()
-          );
-          this.fsExitButton.addEventListener("click", () =>
-            this.exitFullscreen()
-          );
+          this.fsPrevButton.addEventListener("click", () => this.goToPreviousPage());
+          this.fsNextButton.addEventListener("click", () => this.goToNextPage());
+          this.fsExitButton.addEventListener("click", () => this.exitFullscreen());
+        }
+
+        // 擬似全画面コントロール
+        if (this.pfsPrevButton && this.pfsNextButton && this.pfsExitButton) {
+          this.pfsPrevButton.addEventListener("click", () => this.goToPreviousPage());
+          this.pfsNextButton.addEventListener("click", () => this.goToNextPage());
+          this.pfsExitButton.addEventListener("click", () => this.exitPseudoFullscreen());
         }
 
         // キーボードショートカット
@@ -400,21 +521,40 @@ const { filename, title } = Astro.props;
               this.goToNextPage();
               break;
             case "Escape":
-              if (this.isFullscreen) {
+              if (this.isPseudoFullscreen) {
+                this.exitPseudoFullscreen();
+              } else if (this.isFullscreen) {
                 this.exitFullscreen();
               }
               break;
             case "f":
             case "F":
-              if (!this.isFullscreen) {
+              if (!this.isFullscreen && !this.isPseudoFullscreen) {
                 this.toggleFullscreen();
               }
               break;
           }
         });
 
-        // タッチイベント（スワイプ操作）
-        this.canvas.addEventListener(
+        // タッチイベント（通常のcanvas）
+        this.bindTouchEvents(this.canvas);
+
+        // タッチイベント（擬似全画面canvas）
+        if (this.pseudoCanvas) {
+          this.bindTouchEvents(this.pseudoCanvas);
+        }
+
+        // 全画面状態の監視（通常の全画面のみ）
+        document.addEventListener("fullscreenchange", () => {
+          this.handleFullscreenChange();
+        });
+        document.addEventListener("webkitfullscreenchange", () => {
+          this.handleFullscreenChange();
+        });
+      }
+
+      bindTouchEvents(canvas) {
+        canvas.addEventListener(
           "touchstart",
           (e) => {
             if (e.touches.length === 1) {
@@ -425,7 +565,7 @@ const { filename, title } = Astro.props;
           { passive: true }
         );
 
-        this.canvas.addEventListener(
+        canvas.addEventListener(
           "touchend",
           (e) => {
             if (e.changedTouches.length === 1) {
@@ -436,10 +576,7 @@ const { filename, title } = Astro.props;
               const deltaY = touchEndY - this.touchStartY;
 
               // 水平方向のスワイプのみを判定（垂直方向のスクロールを除外）
-              if (
-                Math.abs(deltaX) > Math.abs(deltaY) &&
-                Math.abs(deltaX) > 50
-              ) {
+              if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50) {
                 if (deltaX > 0) {
                   this.goToPreviousPage(); // 右スワイプ：前のページ
                 } else {
@@ -450,14 +587,6 @@ const { filename, title } = Astro.props;
           },
           { passive: true }
         );
-
-        // 全画面状態の監視
-        document.addEventListener("fullscreenchange", () => {
-          this.handleFullscreenChange();
-        });
-        document.addEventListener("webkitfullscreenchange", () => {
-          this.handleFullscreenChange();
-        });
       }
 
       async loadPDF() {
@@ -471,8 +600,12 @@ const { filename, title } = Astro.props;
           this.totalPages = this.pdf.numPages;
           this.totalPagesSpan.textContent = this.totalPages.toString();
 
+          // 全ての総ページ数表示を更新
           if (this.fsTotalPagesSpan) {
             this.fsTotalPagesSpan.textContent = this.totalPages.toString();
+          }
+          if (this.pfsTotalPagesSpan) {
+            this.pfsTotalPagesSpan.textContent = this.totalPages.toString();
           }
 
           this.loadingDiv.style.display = "none";
@@ -488,26 +621,43 @@ const { filename, title } = Astro.props;
       }
 
       async renderPage() {
-        if (!this.pdf || !this.canvas || !this.context) {
-          console.error("PDF、Canvas、または Context が利用できません");
+        if (!this.pdf) {
+          console.error("PDFが利用できません");
+          return;
+        }
+
+        // 通常のcanvasをレンダリング
+        if (!this.isPseudoFullscreen) {
+          await this.renderToCanvas(this.canvas, this.context, false);
+        }
+
+        // 擬似全画面の場合は擬似全画面canvasをレンダリング
+        if (this.isPseudoFullscreen && this.pseudoCanvas && this.pseudoContext) {
+          await this.renderToCanvas(this.pseudoCanvas, this.pseudoContext, true);
+        }
+      }
+
+      async renderToCanvas(canvas, context, isFullscreen) {
+        if (!canvas || !context) {
+          console.error("Canvas または Context が利用できません");
           return;
         }
 
         const page = await this.pdf.getPage(this.currentPage);
 
-        // デバイスピクセル比を取得（モバイル対応）
+        // デバイスピクセル比を取得
         const devicePixelRatio = window.devicePixelRatio || 1;
 
         // コンテナの利用可能サイズを取得
-        const container = this.canvas.parentElement;
         let containerWidth, containerHeight;
 
-        if (this.isFullscreen) {
+        if (isFullscreen) {
           containerWidth = window.innerWidth;
           containerHeight = window.innerHeight;
         } else {
+          const container = canvas.parentElement;
           containerWidth = container.clientWidth;
-          containerHeight = window.innerHeight * 1;
+          containerHeight = window.innerHeight * 0.7;
         }
 
         // PDFページの元のサイズを取得
@@ -523,46 +673,49 @@ const { filename, title } = Astro.props;
         const viewport = page.getViewport({ scale: renderScale });
 
         // Canvas の内部解像度を高解像度に設定
-        this.canvas.width = viewport.width;
-        this.canvas.height = viewport.height;
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
 
-        // CSS サイズは論理的なサイズに設定（重要！）
-        this.canvas.style.width = `${viewport.width / devicePixelRatio}px`;
-        this.canvas.style.height = `${viewport.height / devicePixelRatio}px`;
+        // CSS サイズは論理的なサイズに設定
+        canvas.style.width = `${viewport.width / devicePixelRatio}px`;
+        canvas.style.height = `${viewport.height / devicePixelRatio}px`;
 
-        // Context のスケールをリセット（重要！）
-        this.context.setTransform(1, 0, 0, 1, 0, 0);
+        // Context のスケールをリセット
+        context.setTransform(1, 0, 0, 1, 0, 0);
 
         // PDF をレンダリング
         await page.render({
-          canvasContext: this.context,
+          canvasContext: context,
           viewport: viewport,
         }).promise;
       }
 
       updateControls() {
+        // 全ての現在ページ表示を更新
         if (this.currentPageSpan) {
           this.currentPageSpan.textContent = this.currentPage.toString();
         }
         if (this.fsCurrentPageSpan) {
           this.fsCurrentPageSpan.textContent = this.currentPage.toString();
         }
+        if (this.pfsCurrentPageSpan) {
+          this.pfsCurrentPageSpan.textContent = this.currentPage.toString();
+        }
 
         const isFirstPage = this.currentPage <= 1;
         const isLastPage = this.currentPage >= this.totalPages;
 
-        if (this.prevButton) {
-          this.prevButton.disabled = isFirstPage;
-        }
-        if (this.nextButton) {
-          this.nextButton.disabled = isLastPage;
-        }
-        if (this.fsPrevButton) {
-          this.fsPrevButton.disabled = isFirstPage;
-        }
-        if (this.fsNextButton) {
-          this.fsNextButton.disabled = isLastPage;
-        }
+        // 全てのボタンの状態を更新
+        const buttons = [
+          { prev: this.prevButton, next: this.nextButton },
+          { prev: this.fsPrevButton, next: this.fsNextButton },
+          { prev: this.pfsPrevButton, next: this.pfsNextButton }
+        ];
+
+        buttons.forEach(({ prev, next }) => {
+          if (prev) prev.disabled = isFirstPage;
+          if (next) next.disabled = isLastPage;
+        });
       }
 
       async goToPreviousPage() {
@@ -591,13 +744,17 @@ const { filename, title } = Astro.props;
       }
 
       async toggleFullscreen() {
+        // モバイルまたはFullscreen APIが利用できない場合は擬似全画面を使用
+        if (this.isMobile || !this.slideContainer?.requestFullscreen) {
+          this.enterPseudoFullscreen();
+          return;
+        }
+
+        // デスクトップの場合は通常の全画面API
         if (!this.slideContainer) return;
 
         try {
-          if (
-            !document.fullscreenElement &&
-            !document.webkitFullscreenElement
-          ) {
+          if (!document.fullscreenElement && !document.webkitFullscreenElement) {
             if (this.slideContainer.requestFullscreen) {
               await this.slideContainer.requestFullscreen();
             } else if (this.slideContainer.webkitRequestFullscreen) {
@@ -608,7 +765,43 @@ const { filename, title } = Astro.props;
           }
         } catch (error) {
           console.error("全画面表示の切り替えに失敗しました:", error);
+          // フォールバックとして擬似全画面を使用
+          this.enterPseudoFullscreen();
         }
+      }
+
+      enterPseudoFullscreen() {
+        if (this.isPseudoFullscreen) return;
+
+        this.isPseudoFullscreen = true;
+        
+        // オーバーレイを表示
+        if (this.pseudoFullscreenOverlay) {
+          this.pseudoFullscreenOverlay.classList.add('active');
+        }
+
+        // bodyスクロールを無効化
+        document.body.classList.add('pseudo-fullscreen-active');
+
+        // 擬似全画面canvasをレンダリング
+        this.renderPage();
+      }
+
+      exitPseudoFullscreen() {
+        if (!this.isPseudoFullscreen) return;
+
+        this.isPseudoFullscreen = false;
+
+        // オーバーレイを非表示
+        if (this.pseudoFullscreenOverlay) {
+          this.pseudoFullscreenOverlay.classList.remove('active');
+        }
+
+        // bodyスクロールを有効化
+        document.body.classList.remove('pseudo-fullscreen-active');
+
+        // 通常canvasを再レンダリング
+        this.renderPage();
       }
 
       async exitFullscreen() {
@@ -629,13 +822,13 @@ const { filename, title } = Astro.props;
         );
 
         if (this.fullscreenControls) {
-          this.fullscreenControls.style.display = this.isFullscreen
-            ? "flex"
-            : "none";
+          this.fullscreenControls.style.display = this.isFullscreen ? "flex" : "none";
         }
 
         // 全画面状態が変わったらページを再描画
-        this.renderPage();
+        if (!this.isPseudoFullscreen) {
+          this.renderPage();
+        }
       }
     }
 
