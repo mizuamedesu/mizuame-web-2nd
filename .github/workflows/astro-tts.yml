@@ -40,8 +40,11 @@ jobs:
     
     - name: Copy TTS files to Docker context
       run: |
-        # TTS関連ファイルを確認
-        ls -la style-bert-vits2/tts_synthesizer.py || echo "tts_synthesizer.py not found in submodule"
+        # サブモジュールからルートにファイルをコピー
+        cp style-bert-vits2/tts_synthesizer.py ./
+        
+        # ファイルの存在を確認
+        ls -la tts_synthesizer.py || echo "tts_synthesizer.py not found"
         ls -la astro_tts_processor.py || echo "astro_tts_processor.py not found"
         ls -la r2_utils.py || echo "r2_utils.py not found"
         
@@ -93,7 +96,7 @@ jobs:
         
         # R2ユーティリティスクリプト
         COPY r2_utils.py /home/user/
-        COPY tts_synthesizer.py /home/user/app/
+        COPY style-bert-vits2/tts_synthesizer.py /home/user/app/
         COPY astro_tts_processor.py /home/user/app/
         
         # プロジェクトファイルをコピー
@@ -132,6 +135,37 @@ jobs:
         CMD ["/home/user/startup.sh", "/bin/bash"]
         EOF
         
+        docker build -t astro-tts .=/home/user PATH=/home/user/.local/bin:$PATH
+        
+        # Style-Bert-VITS2の依存関係をインストール
+        RUN if [ -f "style-bert-vits2/requirements.txt" ]; then \
+            pip install --no-cache-dir -r style-bert-vits2/requirements.txt; \
+        fi
+        
+        USER root
+        
+        # 設定ファイルのダウンロード
+        RUN mkdir -p /home/user/app/bert /home/user/app/configs
+        RUN wget -O /home/user/app/bert/bert_models.json https://raw.githubusercontent.com/litagin02/Style-Bert-VITS2/master/bert/bert_models.json || echo "Failed to download bert_models.json"
+        RUN wget -O /home/user/app/configs/default_paths.yml https://raw.githubusercontent.com/litagin02/Style-Bert-VITS2/master/configs/default_paths.yml || echo "Failed to download default_paths.yml"
+        RUN chown -R user:user /home/user/app/bert /home/user/app/configs
+        
+        USER user
+        
+        # 起動スクリプト
+        RUN echo '#!/bin/bash\n\
+        set -e\n\
+        echo "Setting up TTS environment..."\n\
+        if [ ! -z "$R2_ENDPOINT_URL" ] && [ ! -z "$AWS_ACCESS_KEY_ID" ]; then\n\
+            echo "Downloading models from R2..."\n\
+            python3 /home/user/r2_utils.py download-models || echo "Model download failed"\n\
+        fi\n\
+        exec "$@"\n\
+        ' > /home/user/startup.sh && chmod +x /home/user/startup.sh
+        
+        CMD ["/home/user/startup.sh", "/bin/bash"]
+        EOF
+        
         docker build -t astro-tts .
     
     - name: Generate audio files
@@ -140,6 +174,13 @@ jobs:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
+        TTS_MODEL_NAME: ${{ secrets.TTS_MODEL_NAME }}
+        TTS_MODEL_ID: ${{ secrets.TTS_MODEL_ID }}
+        TTS_SPEAKER_NAME: ${{ secrets.TTS_SPEAKER_NAME }}
+        TTS_SPEAKER_ID: ${{ secrets.TTS_SPEAKER_ID }}
+        TTS_SPEED: ${{ secrets.TTS_SPEED }}
+        TTS_NOISE: ${{ secrets.TTS_NOISE }}
+        TTS_NOISEW: ${{ secrets.TTS_NOISEW }}
       run: |
         # 音声ファイル生成
         docker run --rm \
@@ -148,6 +189,13 @@ jobs:
           -e AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" \
           -e AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}" \
           -e R2_BUCKET_NAME="${R2_BUCKET_NAME}" \
+          -e TTS_MODEL_NAME="${TTS_MODEL_NAME}" \
+          -e TTS_MODEL_ID="${TTS_MODEL_ID}" \
+          -e TTS_SPEAKER_NAME="${TTS_SPEAKER_NAME}" \
+          -e TTS_SPEAKER_ID="${TTS_SPEAKER_ID}" \
+          -e TTS_SPEED="${TTS_SPEED}" \
+          -e TTS_NOISE="${TTS_NOISE}" \
+          -e TTS_NOISEW="${TTS_NOISEW}" \
           astro-tts \
           /home/user/startup.sh python3 astro_tts_processor.py --content-dir src/content/blog --audio-dir public/audio
     
@@ -217,7 +265,7 @@ jobs:
         
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "## Deployment Status" >> $GITHUB_STEP_SUMMARY
-        echo "Site deployed to Cloudflare Pages" >> $GITHUB_STEP_SUMMARY
+        echo "✅ Site deployed to Cloudflare Pages" >> $GITHUB_STEP_SUMMARY
         
   # 別ジョブ: モデル情報の確認（デバッグ用）
   debug-models:
