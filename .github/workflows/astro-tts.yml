@@ -55,9 +55,15 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-pip-
         
-    - name: Build Docker image
-      run: |
-        docker build -t astro-tts .
+    - name: Build Docker image with cache
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./Dockerfile
+        push: false
+        tags: astro-tts:latest
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
         
     - name: Generate audio files
       env:
