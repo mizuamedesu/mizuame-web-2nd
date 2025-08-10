@@ -40,7 +40,7 @@ jobs:
     
     - name: Copy TTS files to Docker context
       run: |
-        cp Style-Bert-VITS2-GitHub-Action/tts_synthesizer.py ./
+        cp Style-Bert-VITS2-GitHub-Actions/tts_synthesizer.py ./
         
         # ファイルの存在を確認
         ls -la tts_synthesizer.py || echo "tts_synthesizer.py not found"
@@ -48,9 +48,9 @@ jobs:
         ls -la r2_utils.py || echo "r2_utils.py not found"
         
         # requirements.txtが存在することを確認
-        if [ -f "Style-Bert-VITS2-GitHub-Action/requirements.txt" ]; then
+        if [ -f "Style-Bert-VITS2-GitHub-Actions/requirements.txt" ]; then
           echo "requirements.txt found"
-          cp Style-Bert-VITS2-GitHub-Action/requirements.txt ./
+          cp Style-Bert-VITS2-GitHub-Actions/requirements.txt ./
         else
           echo "requirements.txt not found, creating minimal version"
           echo "torch>=2.0.0" > requirements.txt
@@ -107,8 +107,8 @@ jobs:
         ENV HOME=/home/user PATH=/home/user/.local/bin:$PATH
         
         # Style-Bert-VITS2の依存関係をインストール
-        RUN if [ -f "Style-Bert-VITS2-GitHub-Action/requirements.txt" ]; then \
-            pip install --no-cache-dir -r Style-Bert-VITS2-GitHub-Action/requirements.txt; \
+        RUN if [ -f "Style-Bert-VITS2-GitHub-Actions/requirements.txt" ]; then \
+            pip install --no-cache-dir -r Style-Bert-VITS2-GitHub-Actions/requirements.txt; \
         fi
         
         USER root
