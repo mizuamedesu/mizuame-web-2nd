@@ -1,0 +1,3 @@
+[submodule "workflows/Style-Bert-VITS2-GitHub-Actions"]
+	path = workflows/Style-Bert-VITS2-GitHub-Actions
+	url = https://github.com/mizuamedesu/Style-Bert-VITS2-GitHub-Actions
