@@ -1,0 +1,279 @@
+name: Astro Blog with TTS
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'src/content/blog/**'
+      - 'src/**'
+      - 'astro.config.mjs'
+      - 'package.json'
+  workflow_dispatch:
+    inputs:
+      force_regenerate:
+        description: 'Force regenerate all audio files'
+        required: false
+        default: 'false'
+        type: boolean
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+        fetch-depth: 0
+    
+    - name: Initialize Style-Bert-VITS2 submodule
+      run: |
+        git submodule update --init --recursive
+        ls -la style-bert-vits2/ || echo "Submodule not found"
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    
+    - name: Copy TTS files to Docker context
+      run: |
+        # TTS関連ファイルを確認
+        ls -la style-bert-vits2/tts_synthesizer.py || echo "tts_synthesizer.py not found in submodule"
+        ls -la astro_tts_processor.py || echo "astro_tts_processor.py not found"
+        ls -la r2_utils.py || echo "r2_utils.py not found"
+        
+        # requirements.txtが存在することを確認
+        if [ -f "style-bert-vits2/requirements.txt" ]; then
+          echo "requirements.txt found"
+        else
+          echo "requirements.txt not found, creating minimal version"
+          echo "torch>=2.0.0" > requirements.txt
+          echo "torchaudio>=2.0.0" >> requirements.txt
+          echo "scipy" >> requirements.txt
+          echo "numpy" >> requirements.txt
+        fi
+    
+    - name: Create additional Python dependencies file
+      run: |
+        cat > additional_requirements.txt << EOF
+        python-frontmatter
+        markdown
+        beautifulsoup4
+        boto3
+        botocore
+        EOF
+    
+    - name: Build Docker image
+      run: |
+        # DockerfileをR2対応版で上書き
+        cat > Dockerfile << 'EOF'
+        FROM nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04
+        
+        RUN apt-get update && apt-get install -y \
+            python3 python3-pip git wget curl unzip awscli \
+            && rm -rf /var/lib/apt/lists/* \
+            && ln -s /usr/bin/python3 /usr/bin/python
+        
+        # Node.js インストール
+        RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+            && apt-get install -y nodejs
+        
+        RUN useradd -m -u 1000 user
+        RUN mkdir -p /home/user/app/bert /home/user/app/models /home/user/app/slm /home/user/app/configs /home/user/app/public/audio
+        
+        WORKDIR /home/user/app
+        
+        # Python依存関係
+        RUN pip install --no-cache-dir --upgrade pip
+        RUN pip install --no-cache-dir "torch<2.4" "torchaudio<2.4" --index-url https://download.pytorch.org/whl/cu118
+        RUN pip install --no-cache-dir boto3 botocore GPUtil psutil python-frontmatter markdown beautifulsoup4
+        
+        # R2ユーティリティスクリプト
+        COPY r2_utils.py /home/user/
+        COPY tts_synthesizer.py /home/user/app/
+        COPY astro_tts_processor.py /home/user/app/
+        
+        # プロジェクトファイルをコピー
+        COPY --chown=user . /home/user/app/
+        RUN chown -R user:user /home/user/app
+        
+        USER user
+        ENV HOME=/home/user PATH=/home/user/.local/bin:$PATH
+        
+        # Style-Bert-VITS2の依存関係をインストール
+        RUN if [ -f "style-bert-vits2/requirements.txt" ]; then \
+            pip install --no-cache-dir -r style-bert-vits2/requirements.txt; \
+        fi
+        
+        USER root
+        
+        # 設定ファイルのダウンロード
+        RUN mkdir -p /home/user/app/bert /home/user/app/configs
+        RUN wget -O /home/user/app/bert/bert_models.json https://raw.githubusercontent.com/litagin02/Style-Bert-VITS2/master/bert/bert_models.json || echo "Failed to download bert_models.json"
+        RUN wget -O /home/user/app/configs/default_paths.yml https://raw.githubusercontent.com/litagin02/Style-Bert-VITS2/master/configs/default_paths.yml || echo "Failed to download default_paths.yml"
+        RUN chown -R user:user /home/user/app/bert /home/user/app/configs
+        
+        USER user
+        
+        # 起動スクリプト
+        RUN echo '#!/bin/bash\n\
+        set -e\n\
+        echo "Setting up TTS environment..."\n\
+        if [ ! -z "$R2_ENDPOINT_URL" ] && [ ! -z "$AWS_ACCESS_KEY_ID" ]; then\n\
+            echo "Downloading models from R2..."\n\
+            python3 /home/user/r2_utils.py download-models || echo "Model download failed"\n\
+        fi\n\
+        exec "$@"\n\
+        ' > /home/user/startup.sh && chmod +x /home/user/startup.sh
+        
+        CMD ["/home/user/startup.sh", "/bin/bash"]
+        EOF
+        
+        docker build -t astro-tts .
+    
+    - name: Generate audio files
+      env:
+        R2_ENDPOINT_URL: ${{ secrets.R2_ENDPOINT_URL }}
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
+      run: |
+        # 音声ファイル生成
+        docker run --rm \
+          -v $(pwd):/home/user/app \
+          -e R2_ENDPOINT_URL="${R2_ENDPOINT_URL}" \
+          -e AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" \
+          -e AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}" \
+          -e R2_BUCKET_NAME="${R2_BUCKET_NAME}" \
+          astro-tts \
+          /home/user/startup.sh python3 astro_tts_processor.py --content-dir src/content/blog --audio-dir public/audio
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+    
+    - name: Install Astro dependencies
+      run: npm ci
+    
+    - name: Check generated audio files
+      run: |
+        echo "Generated audio files:"
+        ls -la public/audio/ || echo "No audio files generated"
+        du -sh public/audio/ || echo "Audio directory empty"
+    
+    - name: Build Astro site
+      run: |
+        echo "Building Astro site..."
+        npm run build
+        
+        echo "Build completed. Contents of dist:"
+        ls -la dist/ || echo "Dist directory not found"
+        
+        # 音声ファイルがdistにコピーされているか確認
+        ls -la dist/audio/ || echo "Audio files not found in dist"
+    
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: astro-build-${{ github.run_number }}
+        path: |
+          dist/
+          public/audio/
+        retention-days: 7
+    
+    - name: Deploy to Cloudflare Pages
+      uses: cloudflare/pages-action@v1
+      with:
+        apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        projectName: ${{ secrets.CLOUDFLARE_PROJECT_NAME }}
+        directory: dist
+        gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Create deployment summary
+      run: |
+        echo "# Deployment Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## Generated Audio Files" >> $GITHUB_STEP_SUMMARY
+        
+        if [ -d "public/audio" ] && [ "$(ls -A public/audio)" ]; then
+          echo "| File | Size |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|------|" >> $GITHUB_STEP_SUMMARY
+          for file in public/audio/*; do
+            if [ -f "$file" ]; then
+              filename=$(basename "$file")
+              size=$(du -h "$file" | cut -f1)
+              echo "| $filename | $size |" >> $GITHUB_STEP_SUMMARY
+            fi
+          done
+        else
+          echo "No audio files were generated." >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## Deployment Status" >> $GITHUB_STEP_SUMMARY
+        echo "Site deployed to Cloudflare Pages" >> $GITHUB_STEP_SUMMARY
+        
+  # 別ジョブ: モデル情報の確認（デバッグ用）
+  debug-models:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    
+    - name: Build minimal Docker image for debugging
+      run: |
+        cat > Dockerfile.debug << 'EOF'
+        FROM python:3.10-slim
+        RUN pip install boto3 botocore
+        COPY r2_utils.py /app/
+        WORKDIR /app
+        CMD ["python3", "r2_utils.py", "download-models"]
+        EOF
+        
+        docker build -f Dockerfile.debug -t debug-r2 .
+    
+    - name: Check R2 models
+      env:
+        R2_ENDPOINT_URL: ${{ secrets.R2_ENDPOINT_URL }}
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
+      run: |
+        echo "Checking R2 bucket contents..."
+        docker run --rm \
+          -e R2_ENDPOINT_URL="${R2_ENDPOINT_URL}" \
+          -e AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" \
+          -e AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}" \
+          -e R2_BUCKET_NAME="${R2_BUCKET_NAME}" \
+          debug-r2 \
+          python3 -c "
+        import boto3
+        import os
+        client = boto3.client('s3',
+            endpoint_url=os.environ.get('R2_ENDPOINT_URL'),
+            aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),
+            aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'),
+            region_name='auto')
+        try:
+            response = client.list_objects_v2(Bucket=os.environ.get('R2_BUCKET_NAME'))
+            if 'Contents' in response:
+                for obj in response['Contents']:
+                    print(f'{obj[\"Key\"]} - {obj[\"Size\"]} bytes')
+            else:
+                print('No objects found in bucket')
+        except Exception as e:
+            print(f'Error: {e}')
+        "
