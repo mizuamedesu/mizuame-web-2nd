@@ -8,7 +8,7 @@ import frontmatter
 import markdown
 from bs4 import BeautifulSoup
 
-sys.path.append('/home/user/app/style-bert-vits2')
+sys.path.append('/home/user/app/Style-Bert-VITS2-GitHub-Action')
 
 from r2_utils import check_audio_exists, download_audio, upload_audio
 from tts_synthesizer import create_synthesizer
