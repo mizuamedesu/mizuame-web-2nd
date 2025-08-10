@@ -74,6 +74,7 @@ jobs:
         TTS_NOISEW: ${{ secrets.TTS_NOISEW }}
       run: |
         docker run --rm \
+          -u $(id -u):$(id -g) \
           -v $(pwd):/home/user/app \
           -e R2_ENDPOINT_URL="${R2_ENDPOINT_URL}" \
           -e AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" \
