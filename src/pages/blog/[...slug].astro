@@ -4,7 +4,6 @@ import BlogPost from '../../layouts/BlogPost.astro';
 import { render } from 'astro:content';
 import Comments from "../../components/Comments.astro";
 
-
 export async function getStaticPaths() {
 	const posts = await getCollection('blog');
 	return posts.map((post) => ({
@@ -12,13 +11,15 @@ export async function getStaticPaths() {
 		props: post,
 	}));
 }
+
 type Props = CollectionEntry<'blog'>;
 
 const post = Astro.props;
 const { Content } = await render(post);
+const articleSlug = post.id; 
 ---
 
-<BlogPost {...post.data}>
+<BlogPost {...post.data} slug={articleSlug}>
 	<Content />
 	<Comments />
 </BlogPost>

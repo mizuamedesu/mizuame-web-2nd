@@ -1,0 +1,168 @@
+---
+// src/components/AudioPlayer.astro
+export interface Props {
+  articleSlug: string;
+  title?: string;
+}
+
+const { articleSlug, title = "" } = Astro.props;
+---
+
+<div id={`audio-player-${articleSlug}`} class="audio-player-container" data-slug={articleSlug} data-title={title}>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', async function() {
+    try {
+      const response = await fetch('/audio-mapping.json');
+      if (!response.ok) {
+        console.log('Audio mapping not found');
+        return;
+      }
+      
+      const data = await response.json();
+      const audioMapping = data.mapping || {};
+      
+      const containers = document.querySelectorAll('.audio-player-container');
+      
+      containers.forEach((container) => {
+        if (!(container instanceof HTMLElement)) return;
+        
+        const slug = container.dataset.slug;
+        const title = container.dataset.title;
+        
+        if (!slug || !audioMapping[slug]) {
+          return; 
+        }
+        
+        const audioFile = audioMapping[slug];
+        const audioUrl = `/audio/${audioFile}`;
+        
+        container.innerHTML = `
+          <div class="audio-player">
+            <div class="audio-header">
+              <h3>この記事を聞く</h3>
+              ${title ? `<p class="audio-title">${title}</p>` : ''}
+            </div>
+            <audio controls preload="metadata" class="audio-element">
+              <source src="${audioUrl}" type="audio/wav" />
+              <p>お使いのブラウザは音声再生に対応していません。</p>
+            </audio>
+            <div class="audio-info">
+              <small>筆者自身の合成音声による音声読み上げ</small>
+            </div>
+          </div>
+        `;
+        
+        const player = container.querySelector('.audio-player');
+        if (player instanceof HTMLElement) {
+          player.style.opacity = '0';
+          player.style.transform = 'translateY(10px)';
+          setTimeout(() => {
+            player.style.transition = 'all 0.5s ease';
+            player.style.opacity = '1';
+            player.style.transform = 'translateY(0)';
+          }, 100);
+        }
+      });
+      
+    } catch (error) {
+      console.log('Failed to load audio mapping:', error);
+    }
+  });
+</script>
+
+<style>
+  .audio-player-container {
+    margin: 2rem 0;
+  }
+  
+  .audio-player {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .audio-header h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .audio-title {
+    margin: 0 0 1rem 0;
+    font-size: 0.9rem;
+    opacity: 0.9;
+    font-style: italic;
+  }
+  
+  .audio-element {
+    width: 100%;
+    height: 45px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    outline: none;
+    margin: 1rem 0;
+  }
+  
+  .audio-element::-webkit-media-controls-panel {
+    background-color: rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+  }
+  
+  .audio-element::-webkit-media-controls-play-button,
+  .audio-element::-webkit-media-controls-pause-button {
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: 50%;
+  }
+  
+  .audio-info {
+    text-align: center;
+    margin-top: 0.5rem;
+  }
+  
+  .audio-info small {
+    opacity: 0.7;
+    font-size: 0.8rem;
+  }
+  
+  @media (prefers-color-scheme: dark) {
+    .audio-player {
+      background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+      box-shadow: 0 8px 25px rgba(45, 55, 72, 0.4);
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .audio-player {
+      padding: 1.2rem;
+      margin: 1.5rem 0;
+    }
+    
+    .audio-header h3 {
+      font-size: 1.1rem;
+    }
+    
+    .audio-element {
+      height: 40px;
+    }
+  }
+  
+  .audio-player:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
+    transition: all 0.3s ease;
+  }
+  
+  @media (prefers-color-scheme: dark) {
+    .audio-player:hover {
+      box-shadow: 0 12px 35px rgba(45, 55, 72, 0.6);
+    }
+  }
+</style>
