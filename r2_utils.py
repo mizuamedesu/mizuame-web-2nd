@@ -23,7 +23,13 @@ class R2Client:
     def download_models(self, target_dir: str = "/home/user/app/models") -> bool:
         print("Downloading TTS models from R2...")
         target_path = Path(target_dir)
-        target_path.mkdir(parents=True, exist_ok=True)
+        
+        try:
+            target_path.mkdir(parents=True, exist_ok=True, mode=0o755)
+        except PermissionError:
+            print(f"Permission denied creating {target_path}, trying current directory...")
+            target_path = Path("./models")
+            target_path.mkdir(parents=True, exist_ok=True, mode=0o755)
         
         try:
             response = self.client.list_objects_v2(

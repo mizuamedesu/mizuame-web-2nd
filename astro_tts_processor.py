@@ -19,7 +19,13 @@ class AstroTTSProcessor:
     def __init__(self, content_dir: str = "src/content/blog", audio_dir: str = "public/audio"):
         self.content_dir = Path(content_dir)
         self.audio_dir = Path(audio_dir)
-        self.audio_dir.mkdir(parents=True, exist_ok=True)
+        
+        try:
+            self.audio_dir.mkdir(parents=True, exist_ok=True, mode=0o755)
+        except PermissionError:
+            print(f"Permission denied creating {self.audio_dir}, using current directory...")
+            self.audio_dir = Path("./audio")
+            self.audio_dir.mkdir(parents=True, exist_ok=True, mode=0o755)
         
         try:
             self.synthesizer = create_synthesizer(
@@ -240,7 +246,11 @@ class AstroTTSProcessor:
         }
         
         mapping_file = Path("public/audio-mapping.json")
-        mapping_file.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            mapping_file.parent.mkdir(parents=True, exist_ok=True, mode=0o755)
+        except PermissionError:
+            mapping_file = Path("./audio-mapping.json")
+            print(f"Using fallback location: {mapping_file}")
         
         with open(mapping_file, 'w', encoding='utf-8') as f:
             json.dump(mapping_data, f, ensure_ascii=False, indent=2)

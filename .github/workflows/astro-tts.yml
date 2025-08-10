@@ -47,6 +47,14 @@ jobs:
         ls -la Style-Bert-VITS2-GitHub-Actions/tts_synthesizer.py || echo "ERROR: tts_synthesizer.py not found in submodule"
         ls -la Style-Bert-VITS2-GitHub-Actions/requirements.txt || echo "WARNING: requirements.txt not found in submodule"
         
+    - name: Cache Python packages
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('Style-Bert-VITS2-GitHub-Actions/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+        
     - name: Build Docker image
       run: |
         docker build -t astro-tts .
@@ -78,7 +86,7 @@ jobs:
           -e TTS_SPEED="${TTS_SPEED}" \
           -e TTS_NOISE="${TTS_NOISE}" \
           -e TTS_NOISEW="${TTS_NOISEW}" \
-          astro-tts \
+          astro-tts:latest \
           /home/user/startup.sh python3 astro_tts_processor.py --content-dir src/content/blog --audio-dir public/audio
     
     - name: Set up Node.js
@@ -86,6 +94,7 @@ jobs:
       with:
         node-version: ${{ env.NODE_VERSION }}
         cache: 'npm'
+        cache-dependency-path: 'package-lock.json'
     
     - name: Install Astro dependencies
       run: npm ci
