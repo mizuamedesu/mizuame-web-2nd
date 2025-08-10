@@ -16,7 +16,6 @@ from style_bert_vits2.constants import Languages
 
 
 class AstroTTSProcessor:
-    
     def __init__(self, content_dir: str = "src/content/blog", audio_dir: str = "public/audio"):
         self.content_dir = Path(content_dir)
         self.audio_dir = Path(audio_dir)
@@ -48,7 +47,6 @@ class AstroTTSProcessor:
     
     def split_text_for_synthesis(self, text: str, max_length: int = 300) -> List[str]:
         sentences = re.split(r'[。！？\n]', text)
-        
         chunks = []
         current_chunk = ""
         
@@ -77,6 +75,13 @@ class AstroTTSProcessor:
             import numpy as np
             from scipy.io import wavfile
             
+            model_name = os.environ.get("TTS_MODEL_NAME")
+            model_id = int(os.environ.get("TTS_MODEL_ID", "0"))
+            speaker_name = os.environ.get("TTS_SPEAKER_NAME")
+            speaker_id = int(os.environ.get("TTS_SPEAKER_ID", "0"))
+            
+            print(f"Using model: {model_name or f'ID:{model_id}'}, speaker: {speaker_name or f'ID:{speaker_id}'}")
+            
             combined_audio = []
             sample_rate = None
             
@@ -85,9 +90,16 @@ class AstroTTSProcessor:
                 
                 sr, audio = self.synthesizer.synthesize(
                     text=chunk,
+                    model_name=model_name,
+                    model_id=model_id,
+                    speaker_name=speaker_name,
+                    speaker_id=speaker_id,
                     language=Languages.JP,
                     auto_split=True,
-                    split_interval=0.5
+                    split_interval=0.5,
+                    length=float(os.environ.get("TTS_SPEED", "1.0")),
+                    noise=float(os.environ.get("TTS_NOISE", "0.6")),
+                    noisew=float(os.environ.get("TTS_NOISEW", "0.8"))
                 )
                 
                 if sample_rate is None:
@@ -120,7 +132,6 @@ class AstroTTSProcessor:
             
             metadata = post.metadata
             content = post.content
-            
             plain_text = self.extract_text_from_markdown(content)
             
             if not plain_text.strip():
@@ -129,7 +140,6 @@ class AstroTTSProcessor:
             
             audio_filename = self.generate_audio_filename(plain_text, md_file.name)
             audio_path = self.audio_dir / audio_filename
-            
             r2_audio_key = f"audio/{audio_filename}"
             
             if check_audio_exists(r2_audio_key):
@@ -142,7 +152,6 @@ class AstroTTSProcessor:
                     }
             
             print(f"Generating audio for: {md_file.name}")
-            
             text_chunks = self.split_text_for_synthesis(plain_text)
             print(f"Split into {len(text_chunks)} chunks")
             
@@ -238,16 +247,6 @@ class AstroTTSProcessor:
         
         print(f"Audio mapping JSON created: {mapping_file}")
         print(f"Mapped {len(audio_mapping)} articles to audio files")
-    
-    def get_available_voices(self) -> Dict:
-        if not self.synthesizer:
-            return {"error": "synthesizer_not_available"}
-        
-        return {
-            "models": self.synthesizer.get_model_names(),
-            "speakers": self.synthesizer.get_speakers(),
-            "styles": self.synthesizer.get_styles()
-        }
 
 
 def main():
@@ -258,8 +257,6 @@ def main():
                        help="Content directory path")
     parser.add_argument("--audio-dir", default="public/audio", 
                        help="Audio output directory path")
-    parser.add_argument("--info", action="store_true", 
-                       help="Show available voices info")
     
     args = parser.parse_args()
     
@@ -272,12 +269,6 @@ def main():
         content_dir=args.content_dir,
         audio_dir=args.audio_dir
     )
-    
-    if args.info:
-        info = processor.get_available_voices()
-        print("Available voices:")
-        print(info)
-        return
     
     results = processor.process_all_posts()
     
