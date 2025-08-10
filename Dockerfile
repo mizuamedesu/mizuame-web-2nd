@@ -24,7 +24,7 @@ RUN pip install --no-cache-dir "torch<2.4" "torchaudio<2.4" --index-url https://
 RUN pip install --no-cache-dir boto3 botocore GPUtil psutil python-frontmatter markdown beautifulsoup4
 
 COPY r2_utils.py /home/user/
-COPY style-bert-vits2/tts_synthesizer.py /home/user/app/
+COPY Style-Bert-VITS2-GitHub-Actions/tts_synthesizer.py /home/user/app/
 COPY astro_tts_processor.py /home/user/app/
 
 COPY --chown=user . /home/user/app/
@@ -33,8 +33,8 @@ RUN chown -R user:user /home/user/app
 USER user
 ENV HOME=/home/user PATH=/home/user/.local/bin:$PATH
 
-RUN if [ -f "style-bert-vits2/requirements.txt" ]; then \
-    pip install --no-cache-dir -r style-bert-vits2/requirements.txt; \
+RUN if [ -f "Style-Bert-VITS2-GitHub-Actions/requirements.txt" ]; then \
+    pip install --no-cache-dir -r Style-Bert-VITS2-GitHub-Actions/requirements.txt; \
 fi
 
 USER root
