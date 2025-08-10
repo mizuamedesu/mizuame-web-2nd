@@ -64,6 +64,9 @@ jobs:
         tags: astro-tts:latest
         cache-from: type=gha
         cache-to: type=gha,mode=max
+    
+    - name: Ensure startup.sh is executable
+      run: chmod +x startup.sh
         
     - name: Generate audio files
       env:
