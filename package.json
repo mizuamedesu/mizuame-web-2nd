@@ -15,18 +15,11 @@
     "@pixiv/three-vrm": "^3.3.4",
     "@pixiv/three-vrm-animation": "^3.3.4",
     "astro": "^5.1.10",
-    "axios": "^1.11.0",
-    "crypto": "^1.0.1",
     "pdfjs-dist": "^5.3.93",
     "three": "^0.172.0"
   },
   "devDependencies": {
     "@types/chart.js": "^2.9.41",
     "@types/three": "^0.172.0"
-  },
-  "description": "[サイト](https://mizuame.works/)",
-  "main": "index.js",
-  "keywords": [],
-  "author": "",
-  "license": "ISC"
+  }
 }
