@@ -2,12 +2,7 @@
 name: Localize External Images
 
 on:
-  workflow_dispatch: # 手動実行
-  push:
-    branches:
-      - main
-    paths:
-      - 'src/content/blog/**/*.md'
+  workflow_dispatch: 
 
 jobs:
   localize-images:
@@ -24,7 +19,7 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Create blog-content-img directory
+      - name: Create blog-content-img base directory
         run: |
           mkdir -p public/blog-content-img
 
@@ -43,13 +38,13 @@ jobs:
           import { createWriteStream } from 'fs';
 
           const BLOG_DIR = 'src/content/blog';
-          const IMAGE_DIR = 'public/blog-content-img';
+          const IMAGE_BASE_DIR = 'public/blog-content-img';
           const BASE_URL = '/blog-content-img';
 
           // 外部画像URLの正規表現パターン
           const IMAGE_URL_PATTERN = /!\[([^\]]*)\]\((https?:\/\/[^\s\)]+\.(?:png|jpg|jpeg|gif|webp|svg))\)/gi;
 
-          async function downloadImage(url, filename) {
+          async function downloadImage(url, filepath) {
             try {
               console.log(`Downloading: ${url}`);
               const response = await axios({
@@ -62,7 +57,7 @@ jobs:
                 }
               });
 
-              const writer = createWriteStream(path.join(IMAGE_DIR, filename));
+              const writer = createWriteStream(filepath);
               response.data.pipe(writer);
 
               return new Promise((resolve, reject) => {
@@ -81,7 +76,7 @@ jobs:
             const extension = urlParts[urlParts.length - 1].split('?')[0];
             
             // URLからユニークなハッシュを生成
-            const hash = crypto.createHash('md5').update(url).digest('hex').substring(0, 8);
+            const hash = crypto.createHash('md5').update(url).digest('hex').substring(0, 12);
             
             return `image-${index + 1}-${hash}.${extension}`;
           }
@@ -92,6 +87,10 @@ jobs:
               let updatedContent = content;
               const imageUrls = [];
               let match;
+              
+              // マークダウンファイル名を取得（拡張子なし）
+              const markdownName = path.basename(filePath, '.md');
+              const imageDir = path.join(IMAGE_BASE_DIR, markdownName);
               
               // 外部画像URLを収集
               const regex = new RegExp(IMAGE_URL_PATTERN.source, 'gi');
@@ -109,13 +108,17 @@ jobs:
               }
 
               console.log(`Found ${imageUrls.length} external images in ${filePath}`);
+              
+              // ディレクトリを作成
+              await fs.mkdir(imageDir, { recursive: true });
+              
               let hasChanges = false;
 
               // 各画像をダウンロードしてパスを更新
               for (let i = 0; i < imageUrls.length; i++) {
                 const imageInfo = imageUrls[i];
                 const filename = generateFilename(imageInfo.url, i);
-                const localPath = path.join(IMAGE_DIR, filename);
+                const localPath = path.join(imageDir, filename);
 
                 try {
                   // ファイルが既に存在するかチェック
@@ -124,12 +127,12 @@ jobs:
                     console.log(`Image already exists: ${filename}`);
                   } catch {
                     // ファイルが存在しない場合はダウンロード
-                    await downloadImage(imageInfo.url, filename);
+                    await downloadImage(imageInfo.url, localPath);
                     console.log(`Downloaded: ${filename}`);
                   }
 
                   // マークダウン内のURLを更新
-                  const newImagePath = `![${imageInfo.altText}](${BASE_URL}/${filename})`;
+                  const newImagePath = `![${imageInfo.altText}](${BASE_URL}/${markdownName}/${filename})`;
                   updatedContent = updatedContent.replace(imageInfo.fullMatch, newImagePath);
                   hasChanges = true;
 
