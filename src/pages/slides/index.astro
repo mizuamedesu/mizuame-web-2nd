@@ -32,46 +32,46 @@ try {
         const name = item.name;
 
         // ファイル名から日付を抽出（プレフィックスまたはサフィックス）
-        // 対応形式: YYYY-MM-DD / YYYYMMDD（前または後ろ）
+        // 対応形式: YYYY-MM-DD / YYYYMMDD（前または後ろ、アンダーバー区切り）
         let date: string | undefined = undefined;
         let displayTitle = name;
 
-        // プレフィックス: YYYY-MM-DD
-        const prefixHyphen = name.match(/^(\d{4}-\d{2}-\d{2})-?/);
+        // プレフィックス: YYYY-MM-DD_
+        const prefixHyphen = name.match(/^(\d{4}-\d{2}-\d{2})_/);
         if (prefixHyphen) {
           date = prefixHyphen[1];
-          displayTitle = name.replace(/^\d{4}-\d{2}-\d{2}-?/, "");
+          displayTitle = name.replace(/^\d{4}-\d{2}-\d{2}_/, "");
         }
-        // プレフィックス: YYYYMMDD
+        // プレフィックス: YYYYMMDD_
         else {
-          const prefixNoHyphen = name.match(/^(\d{8})-?/);
+          const prefixNoHyphen = name.match(/^(\d{8})_/);
           if (prefixNoHyphen) {
             const rawDate = prefixNoHyphen[1];
             date = `${rawDate.slice(0, 4)}-${rawDate.slice(4, 6)}-${rawDate.slice(6, 8)}`;
-            displayTitle = name.replace(/^\d{8}-?/, "");
+            displayTitle = name.replace(/^\d{8}_/, "");
           }
-          // サフィックス: YYYY-MM-DD
+          // サフィックス: _YYYY-MM-DD
           else {
-            const suffixHyphen = name.match(/-(\d{4}-\d{2}-\d{2})$/);
+            const suffixHyphen = name.match(/_(\d{4}-\d{2}-\d{2})$/);
             if (suffixHyphen) {
               date = suffixHyphen[1];
-              displayTitle = name.replace(/-\d{4}-\d{2}-\d{2}$/, "");
+              displayTitle = name.replace(/_\d{4}-\d{2}-\d{2}$/, "");
             }
-            // サフィックス: YYYYMMDD
+            // サフィックス: _YYYYMMDD
             else {
-              const suffixNoHyphen = name.match(/-?(\d{8})$/);
+              const suffixNoHyphen = name.match(/_(\d{8})$/);
               if (suffixNoHyphen) {
                 const rawDate = suffixNoHyphen[1];
                 date = `${rawDate.slice(0, 4)}-${rawDate.slice(4, 6)}-${rawDate.slice(6, 8)}`;
-                displayTitle = name.replace(/-?\d{8}$/, "");
+                displayTitle = name.replace(/_\d{8}$/, "");
               }
             }
           }
         }
 
-        // 表示用タイトルを整形（ハイフンをスペースに、キャメルケースを分割）
+        // 表示用タイトルを整形（ハイフン・アンダーバーをスペースに、キャメルケースを分割）
         displayTitle = displayTitle
-          .replace(/-/g, " ")
+          .replace(/[-_]/g, " ")
           .replace(/([a-z])([A-Z])/g, "$1 $2");
 
         return {
