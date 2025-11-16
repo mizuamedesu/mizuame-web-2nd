@@ -13,12 +13,12 @@ const THUMBNAILS_DIR = path.join(SLIDES_DIR, "thumbnails");
 const METADATA_FILE = path.join(SLIDES_DIR, "metadata.json");
 
 async function generateThumbnails() {
-  console.log("📸 PDFサムネイル生成を開始します...");
+  console.log("PDFサムネイル生成を開始します...");
 
   // サムネイルディレクトリを作成
   if (!existsSync(THUMBNAILS_DIR)) {
     await mkdir(THUMBNAILS_DIR, { recursive: true });
-    console.log("✅ サムネイルディレクトリを作成しました");
+    console.log("サムネイルディレクトリを作成しました");
   }
 
   // PDFファイルを取得
@@ -26,11 +26,11 @@ async function generateThumbnails() {
   const pdfFiles = files.filter((file) => file.endsWith(".pdf"));
 
   if (pdfFiles.length === 0) {
-    console.log("⚠️  PDFファイルが見つかりませんでした");
+    console.log("PDFファイルが見つかりませんでした");
     return;
   }
 
-  console.log(`📄 ${pdfFiles.length}個のPDFファイルを処理します`);
+  console.log(`${pdfFiles.length}個のPDFファイルを処理します`);
 
   const metadata = {};
 
@@ -81,19 +81,19 @@ async function generateThumbnails() {
         thumbnail: `/slides/thumbnails/${name}.png`,
       };
 
-      console.log(`    ✅ サムネイル生成完了 (${numPages}ページ)`);
+      console.log(`    サムネイル生成完了 (${numPages}ページ)`);
     } catch (error) {
-      console.error(`    ❌ エラー: ${filename}`, error.message);
+      console.error(`    エラー: ${filename}`, error.message);
     }
   }
 
   // メタデータをJSONファイルとして保存
   await writeFile(METADATA_FILE, JSON.stringify(metadata, null, 2));
-  console.log(`\n✅ メタデータを保存しました: ${METADATA_FILE}`);
-  console.log(`🎉 サムネイル生成が完了しました！`);
+  console.log(`\nメタデータを保存しました: ${METADATA_FILE}`);
+  console.log("サムネイル生成が完了しました");
 }
 
 generateThumbnails().catch((error) => {
-  console.error("❌ サムネイル生成中にエラーが発生しました:", error);
+  console.error("サムネイル生成中にエラーが発生しました:", error);
   process.exit(1);
 });
