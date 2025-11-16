@@ -48,7 +48,9 @@ jobs:
       - name: Check for changes
         id: check_changes
         run: |
-          git diff --exit-code public/slides/thumbnails/ public/slides/metadata.json || echo "changes=true" >> $GITHUB_OUTPUT
+          if [ ! -f public/slides/metadata.json ] || ! git diff --exit-code public/slides/thumbnails/ public/slides/metadata.json; then
+            echo "changes=true" >> $GITHUB_OUTPUT
+          fi
 
       - name: Commit and push thumbnails
         if: steps.check_changes.outputs.changes == 'true'
