@@ -38,6 +38,11 @@ jobs:
       - name: Install canvas for thumbnail generation
         run: npm install canvas@2.11.2
 
+      - name: Remove old thumbnails
+        run: |
+          rm -rf public/slides/thumbnails/
+          rm -f public/slides/metadata.json
+
       - name: Generate thumbnails
         run: npm run generate-thumbnails
 

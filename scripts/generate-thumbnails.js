@@ -90,6 +90,7 @@ async function generateThumbnails() {
       const renderContext = {
         canvasContext: context,
         viewport: scaledViewport,
+        canvasFactory: canvasFactory,
       };
 
       await page.render(renderContext).promise;
