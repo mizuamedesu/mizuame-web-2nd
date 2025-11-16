@@ -23,15 +23,28 @@ try {
     .filter((file) => file.endsWith(".pdf"))
     .map((file) => {
       const name = file.replace(".pdf", "");
-      // ファイル名から日付を抽出（YYYY-MM-DD形式）
-      const dateMatch = name.match(/^(\d{4}-\d{2}-\d{2})/);
-      const date = dateMatch ? dateMatch[1] : undefined;
 
-      // 表示用タイトルを生成（日付部分を除去し、ハイフンをスペースに）
+      // ファイル名から日付を抽出（YYYY-MM-DD形式 または YYYYMMDD形式）
+      let date: string | undefined = undefined;
       let displayTitle = name;
-      if (date) {
+
+      // YYYY-MM-DD 形式をチェック
+      const dateMatchHyphen = name.match(/^(\d{4}-\d{2}-\d{2})/);
+      if (dateMatchHyphen) {
+        date = dateMatchHyphen[1];
         displayTitle = name.replace(/^\d{4}-\d{2}-\d{2}-?/, "");
+      } else {
+        // YYYYMMDD 形式をチェック
+        const dateMatchNoHyphen = name.match(/^(\d{8})/);
+        if (dateMatchNoHyphen) {
+          const rawDate = dateMatchNoHyphen[1];
+          // YYYY-MM-DD 形式に変換
+          date = `${rawDate.slice(0, 4)}-${rawDate.slice(4, 6)}-${rawDate.slice(6, 8)}`;
+          displayTitle = name.replace(/^\d{8}-?/, "");
+        }
       }
+
+      // 表示用タイトルを整形（ハイフンをスペースに、キャメルケースを分割）
       displayTitle = displayTitle
         .replace(/-/g, " ")
         .replace(/([a-z])([A-Z])/g, "$1 $2");
