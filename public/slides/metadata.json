@@ -1,44 +1,44 @@
 {
-  "2024年度COINSAC入試_資料1.pdf": {
-    "name": "2024年度COINSAC入試_資料1",
-    "filename": "2024年度COINSAC入試_資料1.pdf",
+  "2024年度COINSAC入試_資料1_20231101.pdf": {
+    "name": "2024年度COINSAC入試_資料1_20231101",
+    "filename": "2024年度COINSAC入試_資料1_20231101.pdf",
     "numPages": 33,
-    "thumbnail": "/slides/thumbnails/2024年度COINSAC入試_資料1.png"
+    "thumbnail": "/slides/thumbnails/2024年度COINSAC入試_資料1_20231101.png"
   },
-  "2024年度COINSAC入試_資料2.pdf": {
-    "name": "2024年度COINSAC入試_資料2",
-    "filename": "2024年度COINSAC入試_資料2.pdf",
+  "2024年度COINSAC入試_資料2_20231101.pdf": {
+    "name": "2024年度COINSAC入試_資料2_20231101",
+    "filename": "2024年度COINSAC入試_資料2_20231101.pdf",
     "numPages": 9,
-    "thumbnail": "/slides/thumbnails/2024年度COINSAC入試_資料2.png"
+    "thumbnail": "/slides/thumbnails/2024年度COINSAC入試_資料2_20231101.png"
   },
-  "AWSLambdaでSVG to PNG 生成APIを生やした.pdf": {
-    "name": "AWSLambdaでSVG to PNG 生成APIを生やした",
-    "filename": "AWSLambdaでSVG to PNG 生成APIを生やした.pdf",
+  "AWSLambdaでSVG to PNG 生成APIを生やした_20241121.pdf": {
+    "name": "AWSLambdaでSVG to PNG 生成APIを生やした_20241121",
+    "filename": "AWSLambdaでSVG to PNG 生成APIを生やした_20241121.pdf",
     "numPages": 20,
-    "thumbnail": "/slides/thumbnails/AWSLambdaでSVG to PNG 生成APIを生やした.png"
+    "thumbnail": "/slides/thumbnails/AWSLambdaでSVG to PNG 生成APIを生やした_20241121.png"
   },
-  "AWSとCloudflareで感動のマルチベンダー バックエンド.pdf": {
-    "name": "AWSとCloudflareで感動のマルチベンダー バックエンド",
-    "filename": "AWSとCloudflareで感動のマルチベンダー バックエンド.pdf",
+  "AWSとCloudflareで感動のマルチベンダー バックエンド_20250201.pdf": {
+    "name": "AWSとCloudflareで感動のマルチベンダー バックエンド_20250201",
+    "filename": "AWSとCloudflareで感動のマルチベンダー バックエンド_20250201.pdf",
     "numPages": 15,
-    "thumbnail": "/slides/thumbnails/AWSとCloudflareで感動のマルチベンダー バックエンド.png"
+    "thumbnail": "/slides/thumbnails/AWSとCloudflareで感動のマルチベンダー バックエンド_20250201.png"
   },
-  "OAuth2.0 PKCEを UEでまじめに扱う.pdf": {
-    "name": "OAuth2.0 PKCEを UEでまじめに扱う",
-    "filename": "OAuth2.0 PKCEを UEでまじめに扱う.pdf",
+  "OAuth2.0 PKCEを UEでまじめに扱う_20250314.pdf": {
+    "name": "OAuth2.0 PKCEを UEでまじめに扱う_20250314",
+    "filename": "OAuth2.0 PKCEを UEでまじめに扱う_20250314.pdf",
     "numPages": 28,
-    "thumbnail": "/slides/thumbnails/OAuth2.0 PKCEを UEでまじめに扱う.png"
+    "thumbnail": "/slides/thumbnails/OAuth2.0 PKCEを UEでまじめに扱う_20250314.png"
   },
-  "Unreal.k8s 中間報告.pdf": {
-    "name": "Unreal.k8s 中間報告",
-    "filename": "Unreal.k8s 中間報告.pdf",
+  "Unreal.k8s 中間報告_20251015.pdf": {
+    "name": "Unreal.k8s 中間報告_20251015",
+    "filename": "Unreal.k8s 中間報告_20251015.pdf",
     "numPages": 29,
-    "thumbnail": "/slides/thumbnails/Unreal.k8s 中間報告.png"
+    "thumbnail": "/slides/thumbnails/Unreal.k8s 中間報告_20251015.png"
   },
-  "アカウント周りの処理とかについて.pdf": {
-    "name": "アカウント周りの処理とかについて",
-    "filename": "アカウント周りの処理とかについて.pdf",
+  "アカウント周りの処理とかについて_20250315.pdf": {
+    "name": "アカウント周りの処理とかについて_20250315",
+    "filename": "アカウント周りの処理とかについて_20250315.pdf",
     "numPages": 20,
-    "thumbnail": "/slides/thumbnails/アカウント周りの処理とかについて.png"
+    "thumbnail": "/slides/thumbnails/アカウント周りの処理とかについて_20250315.png"
   }
 }
