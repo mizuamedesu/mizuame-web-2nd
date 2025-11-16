@@ -1,0 +1,57 @@
+name: Generate PDF Thumbnails
+
+on:
+  push:
+    paths:
+      - 'public/slides/*.pdf'
+  workflow_dispatch:
+
+jobs:
+  generate-thumbnails:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install system dependencies for canvas
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libcairo2-dev \
+            libpango1.0-dev \
+            libjpeg-dev \
+            libgif-dev \
+            librsvg2-dev
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Install canvas for thumbnail generation
+        run: npm install canvas@2.11.2
+
+      - name: Generate thumbnails
+        run: npm run generate-thumbnails
+
+      - name: Check for changes
+        id: check_changes
+        run: |
+          git diff --exit-code public/slides/thumbnails/ public/slides/metadata.json || echo "changes=true" >> $GITHUB_OUTPUT
+
+      - name: Commit and push thumbnails
+        if: steps.check_changes.outputs.changes == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add public/slides/thumbnails/
+          git add public/slides/metadata.json
+          git commit -m "chore: 自動生成されたPDFサムネイルとメタデータを追加"
+          git push

@@ -1,11 +1,9 @@
 ---
 // src/pages/slides/index.astro
-import { readdir } from "fs/promises";
+import { readFile } from "fs/promises";
 import path from "path";
+import { existsSync } from "fs";
 import Layout from "../../layouts/SlideLayout.astro";
-
-// public/slides フォルダからPDFファイルを取得
-const slidesDir = path.join(process.cwd(), "public/slides");
 
 interface Slide {
   name: string;
@@ -13,46 +11,95 @@ interface Slide {
   path: string;
   displayTitle: string;
   date?: string;
+  thumbnail?: string;
+  numPages?: number;
 }
 
 let slides: Slide[] = [];
 
 try {
-  const files = await readdir(slidesDir);
-  slides = files
-    .filter((file) => file.endsWith(".pdf"))
-    .map((file) => {
-      const name = file.replace(".pdf", "");
-      // ファイル名から日付を抽出（YYYY-MM-DD形式）
-      const dateMatch = name.match(/^(\d{4}-\d{2}-\d{2})/);
-      const date = dateMatch ? dateMatch[1] : undefined;
+  // メタデータファイルを読み込む
+  const metadataPath = path.join(process.cwd(), "public/slides/metadata.json");
 
-      // 表示用タイトルを生成（日付部分を除去し、ハイフンをスペースに）
-      let displayTitle = name;
-      if (date) {
-        displayTitle = name.replace(/^\d{4}-\d{2}-\d{2}-?/, "");
-      }
-      displayTitle = displayTitle
-        .replace(/-/g, " ")
-        .replace(/([a-z])([A-Z])/g, "$1 $2");
+  if (!existsSync(metadataPath)) {
+    console.log("メタデータファイルが存在しません。ビルドスクリプトを実行してください。");
+  } else {
+    const metadataContent = await readFile(metadataPath, "utf-8");
+    const metadata = JSON.parse(metadataContent);
 
-      return {
-        name,
-        filename: file,
-        path: `/slides/${file}`,
-        displayTitle: displayTitle || name,
-        date,
-      };
-    })
-    .sort((a, b) => {
-      // 日付がある場合は日付順、ない場合は名前順
-      if (a.date && b.date) {
-        return b.date.localeCompare(a.date);
-      }
-      return b.name.localeCompare(a.name);
-    });
+    slides = Object.values(metadata)
+      .map((item: any) => {
+        const name = item.name;
+
+        // ファイル名から日付を抽出（プレフィックスまたはサフィックス）
+        // 対応形式: YYYY-MM-DD / YYYYMMDD（前または後ろ、アンダーバー区切り）
+        let date: string | undefined = undefined;
+        let displayTitle = name;
+
+        // プレフィックス: YYYY-MM-DD_
+        const prefixHyphen = name.match(/^(\d{4}-\d{2}-\d{2})_/);
+        if (prefixHyphen) {
+          date = prefixHyphen[1];
+          displayTitle = name.replace(/^\d{4}-\d{2}-\d{2}_/, "");
+        }
+        // プレフィックス: YYYYMMDD_
+        else {
+          const prefixNoHyphen = name.match(/^(\d{8})_/);
+          if (prefixNoHyphen) {
+            const rawDate = prefixNoHyphen[1];
+            date = `${rawDate.slice(0, 4)}-${rawDate.slice(4, 6)}-${rawDate.slice(6, 8)}`;
+            displayTitle = name.replace(/^\d{8}_/, "");
+          }
+          // サフィックス: _YYYY-MM-DD
+          else {
+            const suffixHyphen = name.match(/_(\d{4}-\d{2}-\d{2})$/);
+            if (suffixHyphen) {
+              date = suffixHyphen[1];
+              displayTitle = name.replace(/_\d{4}-\d{2}-\d{2}$/, "");
+            }
+            // サフィックス: _YYYYMMDD
+            else {
+              const suffixNoHyphen = name.match(/_(\d{8})$/);
+              if (suffixNoHyphen) {
+                const rawDate = suffixNoHyphen[1];
+                date = `${rawDate.slice(0, 4)}-${rawDate.slice(4, 6)}-${rawDate.slice(6, 8)}`;
+                displayTitle = name.replace(/_\d{8}$/, "");
+              }
+            }
+          }
+        }
+
+        // 表示用タイトルを整形（ハイフン・アンダーバーをスペースに、キャメルケースを分割）
+        displayTitle = displayTitle
+          .replace(/[-_]/g, " ")
+          .replace(/([a-z])([A-Z])/g, "$1 $2");
+
+        return {
+          name,
+          filename: item.filename,
+          path: `/slides/${item.filename}`,
+          displayTitle: displayTitle || name,
+          date,
+          thumbnail: item.thumbnail,
+          numPages: item.numPages,
+        };
+      })
+      .sort((a, b) => {
+        // 日付があるものを優先
+        if (a.date && !b.date) return -1;
+        if (!a.date && b.date) return 1;
+
+        // 両方日付がある場合は日付順（降順：新しい順）
+        if (a.date && b.date) {
+          return b.date.localeCompare(a.date);
+        }
+
+        // 両方日付がない場合は名前順
+        return a.name.localeCompare(b.name);
+      });
+  }
 } catch (error) {
-  console.log("slides フォルダが存在しないか、読み取りできません");
+  console.log("メタデータの読み込みエラー:", error);
 }
 ---
 
@@ -65,7 +112,6 @@ try {
     {
       slides.length === 0 ? (
         <div class="empty-state">
-          <div class="empty-icon">📄</div>
           <h2>まだスライドがありません</h2>
           <p>public/slides/ フォルダにPDFファイルを配置してください。</p>
         </div>
@@ -74,15 +120,18 @@ try {
           {slides.map((slide) => (
             <article class="slide-card">
               <a href={`/slides/${slide.name}`} class="card-link">
-                <div
-                  class="slide-preview"
-                  id={`preview-${slide.name}`}
-                  data-filename={slide.filename}
-                >
-                  <div class="loading-placeholder">
-                    <div class="loading-spinner" />
-                    <span>プレビュー読み込み中...</span>
-                  </div>
+                <div class="slide-preview">
+                  {slide.thumbnail ? (
+                    <img
+                      src={slide.thumbnail}
+                      alt={`${slide.displayTitle}のプレビュー`}
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div class="no-thumbnail">
+                      <span>プレビューなし</span>
+                    </div>
+                  )}
                 </div>
                 <div class="slide-info">
                   <h3 class="slide-title">{slide.displayTitle}</h3>
@@ -96,8 +145,8 @@ try {
                     </time>
                   )}
                   <div class="slide-meta">
-                    <span class="pages-count" id={`pages-${slide.name}`}>
-                      -- ページ
+                    <span class="pages-count">
+                      {slide.numPages ? `${slide.numPages} ページ` : "-- ページ"}
                     </span>
                     <span class="file-format">PDF</span>
                   </div>
@@ -147,11 +196,6 @@ try {
     color: #666;
   }
 
-  .empty-icon {
-    font-size: 4rem;
-    margin-bottom: 1rem;
-  }
-
   .empty-state h2 {
     font-size: 1.5rem;
     margin: 0 0 1rem 0;
@@ -194,26 +238,19 @@ try {
     position: relative;
   }
 
-  .slide-preview canvas {
+  .slide-preview img {
     width: 100%;
     height: 100%;
     object-fit: contain;
   }
 
-  .loading-placeholder {
+  .no-thumbnail {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1rem;
-    color: #666;
-  }
-
-  .loading-spinner {
-    width: 40px;
-    height: 40px;
-    border: 3px solid #e1e8ed;
-    border-top: 3px solid #3498db;
-    border-radius: 50%;
+    justify-content: center;
+    color: #999;
+    font-size: 0.9rem;
   }
 
   .slide-info {
@@ -311,78 +348,3 @@ try {
     }
   }
 </style>
-
-<script>
-  document.addEventListener("DOMContentLoaded", async () => {
-    // PDF.js はCDNから読み込み済み（グローバルのpdfjsLibを使用）
-    const pdfjsLib = (window as any).pdfjsLib;
-    if (!pdfjsLib) {
-      console.error("PDF.js が読み込まれていません");
-      return;
-    }
-
-    // PDF.js worker の設定
-    pdfjsLib.GlobalWorkerOptions.workerSrc =
-      "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
-
-    // 各スライドの最初のページのプレビューを生成
-    const slideCards = document.querySelectorAll(".slide-card");
-
-    for (const card of slideCards) {
-      const previewDiv = card.querySelector(".slide-preview");
-      const pagesSpan = card.querySelector(".pages-count");
-
-      if (!previewDiv) {
-        console.warn("プレビュー要素が見つかりません", card);
-        continue;
-      }
-
-      const filename = previewDiv.getAttribute("data-filename");
-      if (!filename) {
-        console.warn("ファイル名が見つかりません", card);
-        continue;
-      }
-
-      try {
-        const pdf = await pdfjsLib.getDocument(`/slides/${filename}`).promise;
-        const page = await pdf.getPage(1);
-
-        // ページ数を更新
-        if (pagesSpan) {
-          pagesSpan.textContent = `${pdf.numPages} ページ`;
-        }
-
-        const canvas = document.createElement("canvas");
-        const context = canvas.getContext("2d");
-
-        if (!context) {
-          console.error("Canvas context の取得に失敗しました");
-          previewDiv.innerHTML = '<div class="error">Canvas エラー</div>';
-          continue;
-        }
-
-        // プレビューサイズに合わせてスケーリング
-        const viewport = page.getViewport({ scale: 1.0 });
-        const scale = Math.min(350 / viewport.width, 240 / viewport.height);
-        const scaledViewport = page.getViewport({ scale });
-
-        canvas.height = scaledViewport.height;
-        canvas.width = scaledViewport.width;
-
-        await page.render({
-          canvasContext: context,
-          viewport: scaledViewport,
-        }).promise;
-
-        previewDiv.innerHTML = "";
-        previewDiv.appendChild(canvas);
-      } catch (error) {
-        console.error(`プレビュー生成エラー (${filename}):`, error);
-        if (previewDiv) {
-          previewDiv.innerHTML =
-            '<div class="error">プレビュー読み込みエラー</div>';
-        }
-      }
-    }
-  });
-</script>
