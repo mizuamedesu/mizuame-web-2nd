@@ -45,11 +45,17 @@ try {
       };
     })
     .sort((a, b) => {
-      // 日付がある場合は日付順、ない場合は名前順
+      // 日付があるものを優先
+      if (a.date && !b.date) return -1;
+      if (!a.date && b.date) return 1;
+
+      // 両方日付がある場合は日付順（降順：新しい順）
       if (a.date && b.date) {
         return b.date.localeCompare(a.date);
       }
-      return b.name.localeCompare(a.name);
+
+      // 両方日付がない場合は名前順
+      return a.name.localeCompare(b.name);
     });
 } catch (error) {
   console.log("slides フォルダが存在しないか、読み取りできません");
