@@ -2,32 +2,7 @@ import { readdir, mkdir, writeFile } from "fs/promises";
 import { existsSync } from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import { createCanvas, Canvas } from "canvas";
-import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
-
-// Node.js用のCanvasファクトリー
-class NodeCanvasFactory {
-  create(width, height) {
-    const canvas = createCanvas(width, height);
-    const context = canvas.getContext("2d");
-    return {
-      canvas,
-      context,
-    };
-  }
-
-  reset(canvasAndContext, width, height) {
-    canvasAndContext.canvas.width = width;
-    canvasAndContext.canvas.height = height;
-  }
-
-  destroy(canvasAndContext) {
-    canvasAndContext.canvas.width = 0;
-    canvasAndContext.canvas.height = 0;
-    canvasAndContext.canvas = null;
-    canvasAndContext.context = null;
-  }
-}
+import { pdf } from "pdf-to-img";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -55,7 +30,6 @@ async function generateThumbnails() {
   console.log(`${pdfFiles.length}個のPDFファイルを処理します`);
 
   const metadata = {};
-  const canvasFactory = new NodeCanvasFactory();  // ← インスタンスを作成
 
   for (const filename of pdfFiles) {
     try {
@@ -65,40 +39,21 @@ async function generateThumbnails() {
       const name = filename.replace(".pdf", "");
       const thumbnailPath = path.join(THUMBNAILS_DIR, `${name}.png`);
 
-      const loadingTask = pdfjsLib.getDocument({
-        url: pdfPath,
-        canvasFactory: canvasFactory,
-      });
-      
-      const pdf = await loadingTask.promise;
-      const numPages = pdf.numPages;
-      const page = await pdf.getPage(1);
+      // PDFを画像に変換（幅350pxに設定）
+      const document = await pdf(pdfPath, { scale: 2.0 });
 
-      const viewport = page.getViewport({ scale: 1.0 });
-      const scale = 350 / viewport.width;
-      const scaledViewport = page.getViewport({ scale });
+      let numPages = 0;
+      let firstPageSaved = false;
 
-      const canvasAndContext = canvasFactory.create(
-        scaledViewport.width,
-        scaledViewport.height
-      );
-      const { canvas, context } = canvasAndContext;
-
-      context.fillStyle = "white";
-      context.fillRect(0, 0, canvas.width, canvas.height);
-
-      const renderContext = {
-        canvasContext: context,
-        viewport: scaledViewport,
-        canvasFactory: canvasFactory,
-      };
-
-      await page.render(renderContext).promise;
-
-      const buffer = canvas.toBuffer("image/png");
-      await writeFile(thumbnailPath, buffer);
-
-      canvasFactory.destroy(canvasAndContext);
+      // 最初のページのみを保存
+      for await (const image of document) {
+        numPages++;
+        if (!firstPageSaved) {
+          await writeFile(thumbnailPath, image);
+          firstPageSaved = true;
+          console.log(`    サムネイル生成完了 (${numPages}ページ目)`);
+        }
+      }
 
       metadata[filename] = {
         name,
@@ -107,7 +62,7 @@ async function generateThumbnails() {
         thumbnail: `/slides/thumbnails/${name}.png`,
       };
 
-      console.log(`    サムネイル生成完了 (${numPages}ページ)`);
+      console.log(`    完了: 全${numPages}ページ`);
     } catch (error) {
       console.error(`    エラー: ${filename}`, error.message);
     }

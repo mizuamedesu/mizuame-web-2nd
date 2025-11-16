@@ -22,21 +22,11 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: Install system dependencies for canvas
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            libcairo2-dev \
-            libpango1.0-dev \
-            libjpeg-dev \
-            libgif-dev \
-            librsvg2-dev
-
       - name: Install Node dependencies
         run: npm ci
 
-      - name: Install canvas for thumbnail generation
-        run: npm install canvas@2.11.2
+      - name: Install pdf-to-img for thumbnail generation
+        run: npm install pdf-to-img
 
       - name: Remove old thumbnails
         run: |
