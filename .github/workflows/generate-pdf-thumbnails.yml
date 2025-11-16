@@ -1,13 +1,6 @@
 name: Generate PDF Thumbnails
 
 on:
-  push:
-    branches:
-      - master
-      - main
-    paths:
-      - 'public/slides/*.pdf'
-      - 'scripts/generate-thumbnails.js'
   workflow_dispatch:
 
 permissions:
@@ -65,23 +58,15 @@ jobs:
             echo "thumbnails directory NOT found"
           fi
 
-      - name: Check for changes
-        id: check_changes
-        run: |
-          git add public/slides/thumbnails/ public/slides/metadata.json
-          if git diff --cached --exit-code; then
-            echo "No changes detected"
-          else
-            echo "Changes detected"
-            echo "changes=true" >> $GITHUB_OUTPUT
-          fi
-
       - name: Commit and push thumbnails
-        if: steps.check_changes.outputs.changes == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add public/slides/thumbnails/
-          git add public/slides/metadata.json
-          git commit -m "chore: 自動生成されたPDFサムネイルとメタデータを追加"
-          git push
+          git add -f public/slides/thumbnails/
+          git add -f public/slides/metadata.json
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "chore: 自動生成されたPDFサムネイルとメタデータを追加"
+            git push
+          fi
