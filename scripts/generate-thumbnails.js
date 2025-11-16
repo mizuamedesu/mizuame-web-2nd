@@ -2,8 +2,32 @@ import { readdir, mkdir, writeFile } from "fs/promises";
 import { existsSync } from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import { createCanvas } from "canvas";
+import { createCanvas, Canvas } from "canvas";
 import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
+
+// Node.js用のCanvasファクトリー
+class NodeCanvasFactory {
+  create(width, height) {
+    const canvas = createCanvas(width, height);
+    const context = canvas.getContext("2d");
+    return {
+      canvas,
+      context,
+    };
+  }
+
+  reset(canvasAndContext, width, height) {
+    canvasAndContext.canvas.width = width;
+    canvasAndContext.canvas.height = height;
+  }
+
+  destroy(canvasAndContext) {
+    canvasAndContext.canvas.width = 0;
+    canvasAndContext.canvas.height = 0;
+    canvasAndContext.canvas = null;
+    canvasAndContext.context = null;
+  }
+}
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -57,14 +81,23 @@ async function generateThumbnails() {
       const scale = 350 / viewport.width;
       const scaledViewport = page.getViewport({ scale });
 
-      // Canvasを作成
-      const canvas = createCanvas(scaledViewport.width, scaledViewport.height);
-      const context = canvas.getContext("2d");
+      // Canvasファクトリーを使用してCanvasを作成
+      const canvasFactory = new NodeCanvasFactory();
+      const canvasAndContext = canvasFactory.create(
+        scaledViewport.width,
+        scaledViewport.height
+      );
+      const { canvas, context } = canvasAndContext;
+
+      // 背景を白で塗りつぶす
+      context.fillStyle = "white";
+      context.fillRect(0, 0, canvas.width, canvas.height);
 
       // PDFをレンダリング
       const renderContext = {
         canvasContext: context,
         viewport: scaledViewport,
+        canvasFactory: canvasFactory,
       };
 
       await page.render(renderContext).promise;
@@ -72,6 +105,9 @@ async function generateThumbnails() {
       // PNGとして保存
       const buffer = canvas.toBuffer("image/png");
       await writeFile(thumbnailPath, buffer);
+
+      // クリーンアップ
+      canvasFactory.destroy(canvasAndContext);
 
       // メタデータを保存
       metadata[filename] = {
