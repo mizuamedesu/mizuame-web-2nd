@@ -39,13 +39,11 @@ const METADATA_FILE = path.join(SLIDES_DIR, "metadata.json");
 async function generateThumbnails() {
   console.log("PDFサムネイル生成を開始します...");
 
-  // サムネイルディレクトリを作成
   if (!existsSync(THUMBNAILS_DIR)) {
     await mkdir(THUMBNAILS_DIR, { recursive: true });
     console.log("サムネイルディレクトリを作成しました");
   }
 
-  // PDFファイルを取得
   const files = await readdir(SLIDES_DIR);
   const pdfFiles = files.filter((file) => file.endsWith(".pdf"));
 
@@ -57,6 +55,7 @@ async function generateThumbnails() {
   console.log(`${pdfFiles.length}個のPDFファイルを処理します`);
 
   const metadata = {};
+  const canvasFactory = new NodeCanvasFactory();  // ← インスタンスを作成
 
   for (const filename of pdfFiles) {
     try {
@@ -66,50 +65,40 @@ async function generateThumbnails() {
       const name = filename.replace(".pdf", "");
       const thumbnailPath = path.join(THUMBNAILS_DIR, `${name}.png`);
 
-      // PDFを読み込む
-      const loadingTask = pdfjsLib.getDocument(pdfPath);
+      const loadingTask = pdfjsLib.getDocument({
+        url: pdfPath,
+        canvasFactory: canvasFactory,
+      });
+      
       const pdf = await loadingTask.promise;
-
-      // ページ数を取得
       const numPages = pdf.numPages;
-
-      // 1ページ目を取得
       const page = await pdf.getPage(1);
 
-      // ビューポートを設定（幅350pxに合わせる）
       const viewport = page.getViewport({ scale: 1.0 });
       const scale = 350 / viewport.width;
       const scaledViewport = page.getViewport({ scale });
 
-      // Canvasファクトリーを使用してCanvasを作成
-      const canvasFactory = new NodeCanvasFactory();
       const canvasAndContext = canvasFactory.create(
         scaledViewport.width,
         scaledViewport.height
       );
       const { canvas, context } = canvasAndContext;
 
-      // 背景を白で塗りつぶす
       context.fillStyle = "white";
       context.fillRect(0, 0, canvas.width, canvas.height);
 
-      // PDFをレンダリング
       const renderContext = {
         canvasContext: context,
         viewport: scaledViewport,
-        canvasFactory: canvasFactory,
       };
 
       await page.render(renderContext).promise;
 
-      // PNGとして保存
       const buffer = canvas.toBuffer("image/png");
       await writeFile(thumbnailPath, buffer);
 
-      // クリーンアップ
       canvasFactory.destroy(canvasAndContext);
 
-      // メタデータを保存
       metadata[filename] = {
         name,
         filename,
@@ -123,7 +112,6 @@ async function generateThumbnails() {
     }
   }
 
-  // メタデータをJSONファイルとして保存
   await writeFile(METADATA_FILE, JSON.stringify(metadata, null, 2));
   console.log(`\nメタデータを保存しました: ${METADATA_FILE}`);
   console.log("サムネイル生成が完了しました");
