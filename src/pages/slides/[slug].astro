@@ -12,15 +12,53 @@ export async function getStaticPaths() {
     const files = await readdir(slidesDir);
     const pdfFiles = files.filter((file) => file.endsWith(".pdf"));
 
-    return pdfFiles.map((file) => ({
-      params: {
-        slug: file.replace(".pdf", ""),
-      },
-      props: {
-        filename: file,
-        title: file.replace(".pdf", "").replace(/-/g, " "),
-      },
-    }));
+    const paths = [];
+
+    for (const file of pdfFiles) {
+      const fullName = file.replace(".pdf", "");
+      const filename = file;
+      const title = fullName.replace(/-/g, " ");
+
+      let dateStr = null;
+      let nameWithoutDate = fullName;
+
+      const prefixHyphen = fullName.match(/^(\d{4}-\d{2}-\d{2})_(.+)$/);
+      const prefixNoHyphen = fullName.match(/^(\d{8})_(.+)$/);
+      const suffixHyphen = fullName.match(/^(.+)_(\d{4}-\d{2}-\d{2})$/);
+      const suffixNoHyphen = fullName.match(/^(.+)_(\d{8})$/);
+
+      if (prefixHyphen) {
+        dateStr = prefixHyphen[1];
+        nameWithoutDate = prefixHyphen[2];
+      } else if (prefixNoHyphen) {
+        const raw = prefixNoHyphen[1];
+        dateStr = `${raw.slice(0, 4)}-${raw.slice(4, 6)}-${raw.slice(6, 8)}`;
+        nameWithoutDate = prefixNoHyphen[2];
+      } else if (suffixHyphen) {
+        dateStr = suffixHyphen[2];
+        nameWithoutDate = suffixHyphen[1];
+      } else if (suffixNoHyphen) {
+        const raw = suffixNoHyphen[2];
+        dateStr = `${raw.slice(0, 4)}-${raw.slice(4, 6)}-${raw.slice(6, 8)}`;
+        nameWithoutDate = suffixNoHyphen[1];
+      }
+
+      const props = { filename, title };
+
+      paths.push({ params: { slug: fullName }, props });
+
+      if (dateStr && nameWithoutDate !== fullName) {
+        paths.push({ params: { slug: nameWithoutDate }, props });
+      }
+
+      if (dateStr) {
+        paths.push({ params: { slug: dateStr }, props });
+        const dateNoHyphen = dateStr.replace(/-/g, "");
+        paths.push({ params: { slug: dateNoHyphen }, props });
+      }
+    }
+
+    return paths;
   } catch (error) {
     console.log("slides フォルダが存在しません");
     return [];
