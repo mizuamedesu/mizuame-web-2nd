@@ -2,8 +2,12 @@ name: Generate PDF Thumbnails
 
 on:
   push:
+    branches:
+      - master
+      - main
     paths:
       - 'public/slides/*.pdf'
+      - 'scripts/generate-thumbnails.js'
   workflow_dispatch:
 
 jobs:
