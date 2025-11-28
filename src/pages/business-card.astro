@@ -17,15 +17,13 @@ import { SITE_TITLE } from "../consts";
           <p class="description">カードをドラッグして回転 / クリックで裏返す</p>
         </div>
 
-        <div class="card-viewer-container">
-          <div class="card-scene" id="cardScene">
-            <div class="card" id="card">
-              <div class="card-face card-front">
-                <img src="/business_card_front.png" alt="名刺 表面" draggable="false" />
-              </div>
-              <div class="card-face card-back">
-                <img src="/business_card_back.png" alt="名刺 裏面" draggable="false" />
-              </div>
+        <div class="card-scene" id="cardScene">
+          <div class="card" id="card">
+            <div class="card-face card-front">
+              <img src="/business_card_front.png" alt="名刺 表面" draggable="false" />
+            </div>
+            <div class="card-face card-back">
+              <img src="/business_card_back.png" alt="名刺 裏面" draggable="false" />
             </div>
           </div>
         </div>
@@ -191,48 +189,36 @@ import { SITE_TITLE } from "../consts";
     line-height: 1.6;
   }
 
-  .card-viewer-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 3rem;
-    margin: 2rem auto;
-    max-width: 600px;
-    background: #f5f5f5;
-    border-radius: 16px;
-    border: 1px solid #e0e0e0;
-  }
-
   .card-scene {
-    width: 400px;
-    height: 250px;
     perspective: 1000px;
     cursor: grab;
+    display: flex;
+    justify-content: center;
+    margin: 2rem 0;
   }
 
   .card {
-    width: 100%;
-    height: 100%;
     position: relative;
     transform-style: preserve-3d;
-    transition: transform 0.05s ease-out;
   }
 
   .card-face {
-    position: absolute;
-    width: 100%;
-    height: 100%;
     backface-visibility: hidden;
     border-radius: 8px;
     overflow: hidden;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   }
 
+  .card-face.card-back {
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
   .card-face img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    background: #fff;
+    display: block;
+    max-width: 100%;
+    height: auto;
   }
 
   .card-front {
@@ -297,18 +283,12 @@ import { SITE_TITLE } from "../consts";
   }
 
   @media (max-width: 480px) {
-    .card-scene {
-      width: 300px;
-      height: 187px;
-    }
-
-    .card-viewer-container {
-      padding: 2rem 1rem;
-      margin: 1rem;
+    .container {
+      padding: 1rem;
     }
 
     .header h1 {
-      font-size: 2rem;
+      font-size: 1.5rem;
     }
 
     .controls-section {
