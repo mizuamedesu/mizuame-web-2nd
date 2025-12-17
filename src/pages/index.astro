@@ -4,21 +4,7 @@ import Footer from "../components/Footer.astro";
 import Banner from "../components/Banner.astro";
 import { SITE_TITLE, SITE_DESCRIPTION } from "../consts";
 import { getCollection } from "astro:content";
-import BootLoader from "../components/BootLoader.astro";
-
-const customBootText = `
-Welcome to mizuame.works Portfolio!
-
-##      ## ######## ##        ######   #######  ##     ## ######## 
-##  ##  ## ##       ##       ##    ## ##     ## ###   ### ##       
-##  ##  ## ##       ##       ##       ##     ## #### #### ##       
-##  ##  ## ######   ##       ##       ##     ## ## ### ## ######   
-##  ##  ## ##       ##       ##       ##     ## ##     ## ##       
-##  ##  ## ##       ##       ##    ## ##     ## ##     ## ##       
- ###  ###  ######## ########  ######   #######  ##     ## ######## 
-
-root@mizuame.works:~# _
-`;
+import FormattedDate from "../components/FormattedDate.astro";
 
 // ブログ記事を取得し、日付順にソートして最新3件を取得
 const posts = (await getCollection("blog"))
@@ -51,7 +37,7 @@ const banners = [
     href: "https://blog.whatacotton.com",
     title: "WhatACottonの備忘録",
   },
-    {
+  {
     src: "banner/tsukuba-love2.png",
     alt: "つくば大好き連合",
     href: "https://love.tsukuba-ac.net",
@@ -64,309 +50,1770 @@ const banners = [
 <html lang="ja">
   <head>
     <BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
-    <link
-      href="https://fonts.googleapis.com/css2?family=VT323&display=swap"
-      rel="stylesheet"
-    />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
   </head>
   <body>
-    <BootLoader bootText={customBootText} />
-    <div class="win95-container">
-      <div class="win95-window">
-        <div class="win95-titlebar">
-          <div class="win95-title">みずあめのポートフォリオ</div>
-          <div class="win95-controls">
-            <button class="win95-btn minimize">_</button>
-            <button class="win95-btn maximize">□</button>
-            <button class="win95-btn close">×</button>
+    <!-- プログレスバー -->
+    <div class="progress-bar"></div>
+
+    <!-- 装飾要素 -->
+    <div class="deco deco-circle-1" data-parallax data-speed="0.3"></div>
+    <div class="deco deco-circle-2" data-parallax data-speed="-0.2"></div>
+    <div class="deco deco-circle-3" data-parallax data-speed="0.15"></div>
+    <div class="deco deco-cross-1" data-parallax data-speed="0.4">+</div>
+    <div class="deco deco-cross-2" data-parallax data-speed="-0.3">+</div>
+    <div class="deco deco-cross-3" data-parallax data-speed="0.25">x</div>
+
+    <!-- ドットパターン -->
+    <div class="dots-container dots-1" data-parallax data-speed="0.1"></div>
+    <div class="dots-container dots-2" data-parallax data-speed="-0.15"></div>
+    <div class="dots-container dots-3" data-parallax data-speed="0.2"></div>
+    <div class="dots-container dots-4" data-parallax data-speed="-0.1"></div>
+
+    <main>
+      <!-- ヒーローセクション -->
+      <section class="hero">
+        <div class="hero-bg-text" data-parallax data-speed="-0.5">PORTFOLIO</div>
+        <div class="hero-content" data-scale-out>
+          <div class="name-container">
+            <span class="name-sub">SOFTWARE ENGINEER</span>
+            <h1 class="name-main">
+              <span class="char" style="--i:0; --r:-5deg">み</span>
+              <span class="char" style="--i:1; --r:3deg">ず</span>
+              <span class="char" style="--i:2; --r:-2deg">あ</span>
+              <span class="char" style="--i:3; --r:4deg">め</span>
+            </h1>
+            <div class="name-deco">
+              <span class="deco-text rotate-left">WORKS</span>
+              <span class="deco-text rotate-right">2025</span>
+            </div>
+          </div>
+
+          <div class="tagline-wrapper">
+            <div class="tagline-box">
+              <span class="tagline-label">About</span>
+              <p class="tagline">猫吸いたい</p>
+            </div>
+          </div>
+
+          <div class="floating-elements">
+            <div class="float-item float-1" data-parallax data-speed="0.2">CODE</div>
+            <div class="float-item float-2" data-parallax data-speed="-0.15">DESIGN</div>
+            <div class="float-item float-3" data-parallax data-speed="0.25">CREATE</div>
           </div>
         </div>
-        <div class="win95-content">
-          <div class="text-section">
-            <div class="win95-text large-text">
-              一過性のパソコンオタク
-            </div>
-          </div>
 
-          <div class="win95-section">
-            <div class="win95-section-title">About</div>
-            <div class="win95-fieldset">
-              <div class="win95-text">本名: 佐藤 良</div>
-              <div class="win95-text">所属: 筑波大学情報科学類B2</div>
-              <div class="win95-text">肩書き: ソフトウェアエンジニア</div>
-              <a href="https://md.mizuame.app/s/Jo4uDyaKR" class="win95-link"
-                >詳しくはこちらをご覧ください</a
-              >
-            </div>
-          </div>
+        <div class="scroll-hint">
+          <span>SCROLL</span>
+          <div class="scroll-line"></div>
+        </div>
+      </section>
 
-          <div class="win95-section">
-            <div class="win95-section-title">ブログ</div>
-            <div class="win95-fieldset">
-              <div class="blog-section">
-                <ul>
-                  {
-                    posts.map((post) => (
-                      <li>
-                        <a href={`/blog/${post.id}/`}>
-                          <div class="win95-blog-item">
-                            <h4 class="post-title">{post.data.title}</h4>
-                            <p class="post-description">
-                              {post.data.description}
-                            </p>
-                            <p class="post-date">
-                              {post.data.pubDate.toLocaleDateString("ja-JP")}
-                            </p>
-                          </div>
-                        </a>
-                      </li>
-                    ))
-                  }
-                </ul>
-
-                <div class="view-all-button">
-                  <a href="/blog" class="win95-button">ブログ一覧を見る</a>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="win95-section">
-            <div class="win95-section-title">スライド</div>
-            <div class="win95-fieldset">
-              <a href="/slides" class="win95-link"
-                >スライド一覧</a
-              >
-            </div>
-          </div>
-
-          <div class="win95-section">
-            <div class="win95-section-title">名刺</div>
-            <div class="win95-fieldset">
-              <a href="/business-card" class="win95-link"
-                >名刺を3Dで見る</a
-              >
-            </div>
-          </div>
-
-          <div class="win95-section">
-            <div class="win95-section-title">コンタクト</div>
-            <div class="win95-fieldset">
-              <div class="win95-text">hello at mizuame.works</div>
-            </div>
-          </div>
-
-          <Banner banners={banners} />
-
-          <div class="footer-section">
-            <Footer />
+      <!-- マーキーテキスト1 -->
+      <div class="marquee-section">
+        <div class="marquee" data-direction="left">
+          <div class="marquee-content">
+            <span>UNREAL ENGINE</span><span class="marquee-dot">/</span>
+            <span>UNITY</span><span class="marquee-dot">/</span>
+            <span>AWS</span><span class="marquee-dot">/</span>
+            <span>KUBERNETES</span><span class="marquee-dot">/</span>
+            <span>CLOUDFLARE</span><span class="marquee-dot">/</span>
+            <span>UNREAL ENGINE</span><span class="marquee-dot">/</span>
+            <span>UNITY</span><span class="marquee-dot">/</span>
+            <span>AWS</span><span class="marquee-dot">/</span>
+            <span>KUBERNETES</span><span class="marquee-dot">/</span>
+            <span>CLOUDFLARE</span><span class="marquee-dot">/</span>
           </div>
         </div>
       </div>
-    </div>
+
+      <!-- Aboutセクション -->
+      <section class="about" data-animate>
+        <div class="section-header">
+          <div class="section-label">
+            <span class="label-num">01</span>
+            <span class="label-text">ABOUT</span>
+          </div>
+          <h2 class="section-title" data-split-text>自己紹介</h2>
+        </div>
+
+        <div class="about-cards">
+          <div class="about-card" data-scroll-in="left" style="--delay: 0s">
+            <span class="card-label">NAME</span>
+            <span class="card-value">佐藤 良</span>
+          </div>
+          <div class="about-card" data-scroll-in="bottom" style="--delay: 0.1s">
+            <span class="card-label">SCHOOL</span>
+            <span class="card-value">筑波大学<br>情報科学類B2</span>
+          </div>
+          <div class="about-card" data-scroll-in="right" style="--delay: 0.2s">
+            <span class="card-label">ROLE</span>
+            <span class="card-value">ソフトウェア<br>エンジニア</span>
+          </div>
+        </div>
+
+        <a href="https://md.mizuame.app/s/Jo4uDyaKR" class="more-btn" data-scroll-in="bottom">
+          <span>MORE INFO</span>
+          <span class="btn-arrow">→</span>
+        </a>
+      </section>
+
+      <!-- 横スクロールテキスト -->
+      <div class="horizontal-text-section">
+        <div class="horizontal-text" data-horizontal-scroll>
+          <span class="big-text">PORTFOLIO</span>
+          <span class="big-text outline">WORKS</span>
+          <span class="big-text">2025</span>
+          <span class="big-text outline">みずあめ</span>
+        </div>
+      </div>
+
+      <!-- ブログセクション -->
+      <section class="blog" data-animate>
+        <div class="section-header">
+          <div class="section-label">
+            <span class="label-num">02</span>
+            <span class="label-text">BLOG</span>
+          </div>
+          <h2 class="section-title" data-split-text>ブログ</h2>
+        </div>
+
+        <ul class="post-list">
+          {
+            posts.map((post, index) => (
+              <li class="post-item" data-scroll-in="bottom" style={`--delay: ${index * 0.15}s`}>
+                <a href={`/blog/${post.id}/`}>
+                  <div class="post-image" data-tilt>
+                    <img src={post.data.heroImage} alt="" />
+                  </div>
+                  <div class="post-content">
+                    <h4 class="post-title">{post.data.title}</h4>
+                    <p class="post-date">
+                      <FormattedDate date={post.data.pubDate} />
+                    </p>
+                  </div>
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+
+        <div class="view-all" data-scroll-in="scale">
+          <a href="/blog" class="cta-btn">
+            <span class="cta-text">VIEW ALL</span>
+            <span class="cta-arrow">→</span>
+          </a>
+        </div>
+      </section>
+
+      <!-- マーキーテキスト2 -->
+      <div class="marquee-section alt">
+        <div class="marquee" data-direction="right">
+          <div class="marquee-content">
+            <span>GAME DEV</span><span class="marquee-dot">/</span>
+            <span>BACKEND</span><span class="marquee-dot">/</span>
+            <span>INFRASTRUCTURE</span><span class="marquee-dot">/</span>
+            <span>MACHINE LEARNING</span><span class="marquee-dot">/</span>
+            <span>GAME DEV</span><span class="marquee-dot">/</span>
+            <span>BACKEND</span><span class="marquee-dot">/</span>
+            <span>INFRASTRUCTURE</span><span class="marquee-dot">/</span>
+            <span>MACHINE LEARNING</span><span class="marquee-dot">/</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- リンクセクション -->
+      <section class="links" data-animate>
+        <div class="section-header">
+          <div class="section-label">
+            <span class="label-num">03</span>
+            <span class="label-text">LINKS</span>
+          </div>
+          <h2 class="section-title" data-split-text>リンク</h2>
+        </div>
+
+        <div class="link-buttons">
+          <a href="/slides" class="link-btn" data-scroll-in="left" style="--delay: 0s; --hue: 200">
+            <span class="link-num">01</span>
+            <span class="link-text">スライド一覧</span>
+            <span class="link-arrow">→</span>
+          </a>
+          <a href="/business-card" class="link-btn" data-scroll-in="right" style="--delay: 0.1s; --hue: 320">
+            <span class="link-num">02</span>
+            <span class="link-text">名刺を3Dで見る</span>
+            <span class="link-arrow">→</span>
+          </a>
+        </div>
+      </section>
+
+      <!-- コンタクトセクション -->
+      <section class="contact" data-animate>
+        <div class="section-header">
+          <div class="section-label">
+            <span class="label-num">04</span>
+            <span class="label-text">CONTACT</span>
+          </div>
+          <h2 class="section-title" data-split-text>お問い合わせ</h2>
+        </div>
+
+        <div class="contact-box" data-scroll-in="scale">
+          <span class="contact-label">EMAIL</span>
+          <p class="contact-email">
+            hello<span class="at">@</span>mizuame.works
+          </p>
+        </div>
+      </section>
+
+      <Banner banners={banners} />
+    </main>
+    <Footer />
+
+    <script>
+      // プログレスバー
+      const progressBar = document.querySelector('.progress-bar') as HTMLElement;
+
+      // パララックス要素
+      const parallaxElements = document.querySelectorAll('[data-parallax]');
+
+      // 水平スクロールテキスト
+      const horizontalText = document.querySelector('[data-horizontal-scroll]') as HTMLElement;
+
+      // マーキー
+      const marquees = document.querySelectorAll('.marquee');
+
+      // スクロールイン要素
+      const scrollInElements = document.querySelectorAll('[data-scroll-in]');
+
+      // スプリットテキスト
+      const splitTextElements = document.querySelectorAll('[data-split-text]');
+
+      // スケールアウト要素
+      const scaleOutElements = document.querySelectorAll('[data-scale-out]');
+
+      // スプリットテキストの初期化
+      splitTextElements.forEach(el => {
+        const text = el.textContent || '';
+        el.innerHTML = text.split('').map((char, i) =>
+          `<span class="split-char" style="--char-i: ${i}">${char}</span>`
+        ).join('');
+      });
+
+      // Intersection Observer for scroll-in animations
+      const observerOptions = {
+        threshold: 0.2,
+        rootMargin: '0px 0px -100px 0px'
+      };
+
+      const scrollInObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+          }
+        });
+      }, observerOptions);
+
+      scrollInElements.forEach(el => scrollInObserver.observe(el));
+
+      // セクションのアニメーション
+      const sectionObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+          }
+        });
+      }, { threshold: 0.1 });
+
+      document.querySelectorAll('[data-animate]').forEach(el => {
+        sectionObserver.observe(el);
+      });
+
+      // スクロールイベント
+      let ticking = false;
+
+      function updateOnScroll() {
+        const scrollY = window.scrollY;
+        const windowHeight = window.innerHeight;
+        const documentHeight = document.documentElement.scrollHeight;
+        const scrollPercent = scrollY / (documentHeight - windowHeight);
+
+        // プログレスバー更新
+        if (progressBar) {
+          progressBar.style.transform = `scaleX(${scrollPercent})`;
+        }
+
+        // パララックス効果
+        parallaxElements.forEach(el => {
+          const element = el as HTMLElement;
+          const speed = parseFloat(element.dataset.speed || '0');
+          const yPos = scrollY * speed;
+          element.style.transform = `translateY(${yPos}px)`;
+        });
+
+        // 水平スクロールテキスト
+        if (horizontalText) {
+          const rect = horizontalText.parentElement?.getBoundingClientRect();
+          if (rect) {
+            const elementCenter = rect.top + rect.height / 2;
+            const viewportCenter = windowHeight / 2;
+            const distance = elementCenter - viewportCenter;
+            const moveX = distance * -0.5;
+            horizontalText.style.transform = `translateX(${moveX}px)`;
+          }
+        }
+
+        // マーキーのスクロール連動（モバイルでは無効）
+        if (window.innerWidth > 768) {
+          marquees.forEach(marquee => {
+            const element = marquee as HTMLElement;
+            const direction = element.dataset.direction === 'right' ? 1 : -1;
+            const content = element.querySelector('.marquee-content') as HTMLElement;
+            if (content) {
+              const baseSpeed = scrollY * 0.1 * direction;
+              content.style.transform = `translateX(${baseSpeed}px)`;
+            }
+          });
+        }
+
+        // スケールアウト効果
+        scaleOutElements.forEach(el => {
+          const element = el as HTMLElement;
+
+          // スクロールが少ない時は効果を適用しない
+          if (scrollY < 100) {
+            element.style.transform = 'scale(1)';
+            element.style.opacity = '1';
+            return;
+          }
+
+          const rect = element.getBoundingClientRect();
+          const elementTop = rect.top;
+
+          if (elementTop < windowHeight && elementTop > -rect.height) {
+            const progress = Math.max(0, Math.min(1, (windowHeight - elementTop) / windowHeight));
+            const scale = 1 - (progress * 0.3);
+            const opacity = 1 - (progress * 0.8);
+            element.style.transform = `scale(${Math.max(0.7, scale)})`;
+            element.style.opacity = `${Math.max(0.2, opacity)}`;
+          }
+        });
+
+        ticking = false;
+      }
+
+      window.addEventListener('scroll', () => {
+        if (!ticking) {
+          requestAnimationFrame(updateOnScroll);
+          ticking = true;
+        }
+      });
+
+      // 初期実行
+      updateOnScroll();
+
+      // チルトエフェクト
+      document.querySelectorAll('[data-tilt]').forEach(el => {
+        el.addEventListener('mousemove', (e) => {
+          const element = el as HTMLElement;
+          const rect = element.getBoundingClientRect();
+          const x = (e as MouseEvent).clientX - rect.left;
+          const y = (e as MouseEvent).clientY - rect.top;
+          const centerX = rect.width / 2;
+          const centerY = rect.height / 2;
+          const rotateX = (y - centerY) / 10;
+          const rotateY = (centerX - x) / 10;
+
+          element.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.02)`;
+        });
+
+        el.addEventListener('mouseleave', () => {
+          const element = el as HTMLElement;
+          element.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale(1)';
+        });
+      });
+    </script>
   </body>
 </html>
 
 <style>
-  * {
-    margin: 0;
-    padding: 0;
+  /* CSS変数アニメーション用 */
+  @property --border-angle {
+    syntax: '<angle>';
+    initial-value: 0deg;
+    inherits: false;
+  }
+
+  /* ベーススタイル */
+  *, *::before, *::after {
     box-sizing: border-box;
   }
 
-  body {
-    margin: 0;
-    padding: 0;
-    overflow-x: hidden;
-    min-height: 100vh;
-    background-color: #008080;
-    font-family: "MS Sans Serif", "VT323", monospace;
-    color: #000;
+  :root {
+    --coral: #FF6B6B;
+    --yellow: #FFE66D;
+    --blue: #4ECDC4;
+    --purple: #A06CD5;
+    --pink: #FF8ED4;
+    --orange: #FF9F43;
+    --bg: #FFFFFF;
   }
 
-  .win95-container {
+  html {
+    overflow-x: hidden;
+  }
+
+  body {
+    background-color: var(--bg);
+    color: #2D3436;
+    overflow-x: hidden;
+    font-family: 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', sans-serif;
     position: relative;
     width: 100%;
+    max-width: 100vw;
+  }
+
+  /* 紙のようなノイズテクスチャ */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 9998;
+    opacity: 0.35;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.5' numOctaves='5' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  }
+
+  /* プログレスバー */
+  .progress-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: var(--blue);
+    transform-origin: left;
+    transform: scaleX(0);
+    z-index: 9999;
+  }
+
+  /* 装飾要素 */
+  .deco {
+    position: fixed;
+    pointer-events: none;
+    z-index: 0;
+    will-change: transform;
+  }
+
+  .deco-circle-1 {
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    background: var(--blue);
+    opacity: 0.1;
+    top: -100px;
+    right: -100px;
+  }
+
+  .deco-circle-2 {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: var(--blue);
+    opacity: 0.1;
+    top: 50%;
+    left: -80px;
+  }
+
+  .deco-circle-3 {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    border: 3px solid var(--blue);
+    opacity: 0.2;
+    top: 30%;
+    right: 5%;
+  }
+
+  .deco-cross-1, .deco-cross-2, .deco-cross-3 {
+    font-size: 2rem;
+    font-weight: 300;
+  }
+
+  .deco-cross-1 { top: 20%; left: 10%; color: var(--blue); opacity: 0.3; }
+  .deco-cross-2 { top: 40%; right: 15%; color: var(--blue); opacity: 0.3; }
+  .deco-cross-3 { top: 70%; left: 20%; color: var(--blue); font-size: 1.5rem; opacity: 0.3; }
+
+  /* ドットパターン */
+  .dots-container {
+    position: fixed;
+    pointer-events: none;
+    z-index: 0;
+    will-change: transform;
+  }
+
+  .dots-container::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-image: radial-gradient(circle, #2D3436 1.5px, transparent 1.5px);
+    background-size: 12px 12px;
+  }
+
+  .dots-1 {
+    width: 80px;
+    height: 80px;
+    top: 15%;
+    right: 20%;
+    opacity: 0.15;
+    animation: dotsFloat 8s ease-in-out infinite;
+  }
+
+  .dots-2 {
+    width: 60px;
+    height: 100px;
+    top: 45%;
+    left: 8%;
+    opacity: 0.12;
+    animation: dotsFloat 10s ease-in-out infinite reverse;
+  }
+
+  .dots-3 {
+    width: 100px;
+    height: 60px;
+    top: 70%;
+    right: 12%;
+    opacity: 0.1;
+    animation: dotsFloat 12s ease-in-out infinite;
+    animation-delay: -3s;
+  }
+
+  .dots-4 {
+    width: 50px;
+    height: 80px;
+    top: 85%;
+    left: 25%;
+    opacity: 0.15;
+    animation: dotsFloat 9s ease-in-out infinite reverse;
+    animation-delay: -5s;
+  }
+
+  @keyframes dotsFloat {
+    0%, 100% {
+      transform: translateY(0) rotate(0deg);
+    }
+    50% {
+      transform: translateY(-20px) rotate(5deg);
+    }
+  }
+
+  main {
+    position: relative;
+    z-index: 1;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+
+  /* ヒーローセクション */
+  .hero {
     min-height: 100vh;
-    padding: 20px;
     display: flex;
+    flex-direction: column;
     justify-content: center;
-    align-items: flex-start;
-  }
-
-  .win95-window {
-    width: 100%;
-    max-width: 800px;
-    background-color: #c0c0c0;
-    border: 2px solid #000;
-    box-shadow:
-      inset 1px 1px #dfdfdf,
-      inset -1px -1px #0a0a0a,
-      1px 1px #000;
-  }
-
-  .win95-titlebar {
-    height: 22px;
-    background: linear-gradient(90deg, #000080, #1084d0);
-    display: flex;
-    justify-content: space-between;
     align-items: center;
-    padding: 0 2px;
+    position: relative;
+    padding: 4rem 0;
   }
 
-  .win95-title {
-    font-weight: bold;
-    padding-left: 4px;
+  .hero-bg-text {
+    position: absolute;
+    font-size: clamp(60px, 15vw, 200px);
+    font-weight: 900;
+    color: rgba(0, 0, 0, 0.03);
+    letter-spacing: 0.05em;
+    transform: rotate(-5deg);
     user-select: none;
+    will-change: transform;
   }
 
-  .win95-controls {
-    display: flex;
+  .hero-content {
+    text-align: center;
+    position: relative;
+    will-change: transform, opacity;
+    transition: transform 0.1s ease-out, opacity 0.1s ease-out;
   }
 
-  .win95-btn {
-    width: 16px;
-    height: 14px;
-    margin-left: 2px;
-    background-color: #c0c0c0;
-    border: none;
-    border-top: 1px solid #fff;
-    border-left: 1px solid #fff;
-    border-right: 1px solid #000;
-    border-bottom: 1px solid #000;
-    box-shadow:
-      inset 1px 1px #dfdfdf,
-      inset -1px -1px #808080;
-    font-size: 8px;
+  .name-container {
+    position: relative;
+    margin-bottom: 3rem;
+  }
+
+  .name-sub {
+    display: inline-block;
+    font-size: 0.875rem;
+    font-weight: 700;
+    letter-spacing: 0.3em;
+    color: #888;
+    margin-bottom: 1rem;
+    animation: slideIn 0.8s ease-out forwards;
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  .name-main {
+    font-size: clamp(4rem, 15vw, 10rem);
+    font-weight: 900;
+    line-height: 1;
     display: flex;
     justify-content: center;
-    align-items: center;
-    cursor: pointer;
+    gap: 0.1em;
   }
 
-  .win95-content {
-    padding: 10px;
-    background-color: #c0c0c0;
+  .name-main .char {
+    display: inline-block;
+    animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    animation-delay: calc(var(--i) * 0.1s + 0.3s);
+    opacity: 0;
+    transform: scale(0) rotate(var(--r));
+    color: var(--blue);
   }
 
-  .text-section {
+  @keyframes slideIn {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes popIn {
+    to { opacity: 1; transform: scale(1) rotate(var(--r)); }
+  }
+
+  .name-deco {
+    position: absolute;
     width: 100%;
-    text-align: center;
-    padding: 1rem 0;
-    background-color: #c0c0c0;
+    top: 50%;
+    left: 0;
+    pointer-events: none;
   }
 
-  .win95-text {
-    margin-bottom: 0.5rem;
-    font-size: 1.2rem;
-  }
-
-  .large-text {
-    font-size: 1.5rem;
-  }
-
-  .win95-link {
-    color: #0000ff;
-    text-decoration: underline;
-  }
-
-  .win95-section {
-    margin: 15px 0;
-  }
-
-  .win95-section-title {
-    font-weight: bold;
-    font-size: 1.2rem;
-    margin-bottom: 5px;
-  }
-
-  .win95-fieldset {
+  .deco-text {
+    position: absolute;
+    font-size: 0.75rem;
+    font-weight: 900;
+    letter-spacing: 0.2em;
+    padding: 0.5em 1em;
     border: 2px solid;
-    border-color: #808080 #ffffff #ffffff #808080;
-    padding: 10px;
-    background-color: #c0c0c0;
+    animation: fadeIn 0.8s ease-out forwards;
+    opacity: 0;
   }
 
-  .blog-section {
+  .rotate-left {
+    left: -20%;
+    transform: rotate(-90deg);
+    border-color: var(--blue);
+    color: var(--blue);
+    opacity: 0.5;
+    animation-delay: 1s;
+  }
+
+  .rotate-right {
+    right: -15%;
+    transform: rotate(90deg);
+    border-color: var(--blue);
+    color: var(--blue);
+    opacity: 0.5;
+    animation-delay: 1.2s;
+  }
+
+  @keyframes fadeIn {
+    to { opacity: 1; }
+  }
+
+  .tagline-wrapper {
+    margin-bottom: 2rem;
+  }
+
+  .tagline-box {
+    display: inline-block;
+    background: white;
+    padding: 1rem 2rem;
+    border-radius: 100px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    transform: rotate(-2deg);
+    animation: slideUp 0.8s ease-out 0.8s forwards;
+    opacity: 0;
+  }
+
+  @keyframes slideUp {
+    to { opacity: 1; transform: rotate(-2deg) translateY(0); }
+  }
+
+  .tagline-label {
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    color: var(--blue);
+    display: block;
+    margin-bottom: 0.25rem;
+  }
+
+  .tagline {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0;
+    color: #2D3436;
+  }
+
+  .floating-elements {
+    position: absolute;
     width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    pointer-events: none;
   }
 
-  .blog-section ul {
+  .float-item {
+    position: absolute;
+    font-size: 0.75rem;
+    font-weight: 900;
+    letter-spacing: 0.1em;
+    padding: 0.5em 1em;
+    border-radius: 4px;
+    will-change: transform;
+  }
+
+  .float-1 {
+    top: 10%;
+    left: 15%;
+    background: rgba(78, 205, 196, 0.15);
+    color: var(--blue);
+  }
+
+  .float-2 {
+    top: 20%;
+    right: 10%;
+    background: rgba(78, 205, 196, 0.15);
+    color: var(--blue);
+  }
+
+  .float-3 {
+    bottom: 20%;
+    left: 10%;
+    background: rgba(78, 205, 196, 0.15);
+    color: var(--blue);
+  }
+
+  .scroll-hint {
+    position: absolute;
+    bottom: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    animation: fadeIn 1s ease-out 2s forwards;
+    opacity: 0;
+  }
+
+  .scroll-hint span {
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.3em;
+    color: var(--blue);
+  }
+
+  .scroll-line {
+    width: 2px;
+    height: 40px;
+    background: linear-gradient(to bottom, var(--blue), transparent);
+    animation: scrollPulse 1.5s ease-in-out infinite;
+  }
+
+  @keyframes scrollPulse {
+    0%, 100% { transform: scaleY(1); opacity: 1; }
+    50% { transform: scaleY(0.5); opacity: 0.5; }
+  }
+
+  /* マーキーセクション */
+  .marquee-section {
+    padding: 2rem 0;
+    overflow: hidden;
+    background: var(--blue);
+    margin: 0 -2rem;
+    transform: rotate(-2deg) scale(1.05);
+  }
+
+  .marquee-section.alt {
+    background: var(--blue);
+    transform: rotate(2deg) scale(1.05);
+  }
+
+  .marquee {
+    display: flex;
+    white-space: nowrap;
+  }
+
+  .marquee-content {
+    display: flex;
+    gap: 2rem;
+    animation: marqueeBase 20s linear infinite;
+    will-change: transform;
+  }
+
+  @keyframes marqueeBase {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  .marquee-content span {
+    font-size: clamp(1.5rem, 4vw, 3rem);
+    font-weight: 900;
+    color: white;
+    letter-spacing: 0.1em;
+  }
+
+  .marquee-dot {
+    opacity: 0.5;
+  }
+
+  /* 横スクロールテキスト */
+  .horizontal-text-section {
+    padding: 4rem 0;
+    overflow: hidden;
+    margin: 0 -2rem;
+  }
+
+  .horizontal-text {
+    display: flex;
+    gap: 2rem;
+    white-space: nowrap;
+    will-change: transform;
+  }
+
+  .big-text {
+    font-size: clamp(4rem, 15vw, 12rem);
+    font-weight: 900;
+    color: var(--blue);
+    opacity: 0.1;
+  }
+
+  .big-text.outline {
+    color: transparent;
+    -webkit-text-stroke: 2px var(--blue);
+    opacity: 0.1;
+  }
+
+  /* セクション共通 */
+  section {
+    padding: 6rem 0;
+    position: relative;
+  }
+
+  .section-header {
+    margin-bottom: 3rem;
+  }
+
+  .section-label {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .label-num {
+    font-size: 0.75rem;
+    font-weight: 900;
+    color: white;
+    background: var(--blue);
+    padding: 0.25em 0.5em;
+    border-radius: 4px;
+  }
+
+  .label-text {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    color: var(--blue);
+  }
+
+  .section-title {
+    font-size: clamp(2rem, 8vw, 4rem);
+    font-weight: 900;
+    display: inline-block;
+  }
+
+  /* スプリットテキストアニメーション */
+  .split-char {
+    display: inline-block;
+    opacity: 0;
+    transform: translateY(50px) rotate(10deg);
+    transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    transition-delay: calc(var(--char-i) * 0.05s);
+  }
+
+  [data-animate].visible .split-char {
+    opacity: 1;
+    transform: translateY(0) rotate(-2deg);
+  }
+
+  /* スクロールインアニメーション */
+  [data-scroll-in] {
+    opacity: 0;
+    transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    transition-delay: var(--delay, 0s);
+  }
+
+  [data-scroll-in="left"] {
+    transform: translateX(-60px) rotate(5deg);
+  }
+
+  [data-scroll-in="right"] {
+    transform: translateX(60px) rotate(-5deg);
+  }
+
+  [data-scroll-in="bottom"] {
+    transform: translateY(60px);
+  }
+
+  [data-scroll-in="scale"] {
+    transform: scale(0.8);
+  }
+
+  [data-scroll-in].visible {
+    opacity: 1;
+    transform: translateX(0) translateY(0) rotate(0deg) scale(1);
+  }
+
+  /* Aboutセクション */
+  .about-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .about-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .about-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 16px;
+    padding: 3px;
+    background: conic-gradient(from -90deg, var(--blue) var(--border-angle), transparent var(--border-angle));
+    --border-angle: 0deg;
+    transition: --border-angle 0.5s ease-out;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+  }
+
+  .about-card:hover::before {
+    --border-angle: 360deg;
+  }
+
+  .card-label {
+    display: block;
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    color: var(--blue);
+    margin-bottom: 0.5rem;
+  }
+
+  .card-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1.4;
+  }
+
+  .more-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 2rem;
+    background: var(--blue);
+    color: white;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 0.875rem;
+    letter-spacing: 0.1em;
+    border-radius: 100px;
+    transition: all 0.3s ease;
+    position: relative;
+  }
+
+  .more-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 100px;
+    padding: 3px;
+    background: conic-gradient(from -90deg, var(--blue) var(--border-angle), transparent var(--border-angle));
+    --border-angle: 0deg;
+    transition: --border-angle 0.5s ease-out;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+  }
+
+  .more-btn:hover::before {
+    --border-angle: 360deg;
+  }
+
+  .btn-arrow {
+    transition: transform 0.3s ease;
+  }
+
+  .more-btn:hover .btn-arrow {
+    transform: translateX(5px);
+  }
+
+  /* ブログセクション */
+  .post-list {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
     list-style: none;
     padding: 0;
+    margin: 0 0 3rem;
   }
 
-  .blog-section li {
-    margin-bottom: 0.8rem;
+  .post-item {
+    position: relative;
   }
 
-  .blog-section a {
+  .post-item a {
+    display: block;
     text-decoration: none;
     color: inherit;
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    position: relative;
   }
 
-  .win95-blog-item {
-    padding: 10px;
-    border: 2px solid;
-    border-color: #ffffff #808080 #808080 #ffffff;
-    background-color: #c0c0c0;
+  .post-item a::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 16px;
+    padding: 3px;
+    background: conic-gradient(from -90deg, var(--blue) var(--border-angle), transparent var(--border-angle));
+    --border-angle: 0deg;
+    transition: --border-angle 0.5s ease-out;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
   }
 
-  .win95-blog-item:hover {
-    background-color: #efefef;
+  .post-item a:hover::after {
+    --border-angle: 360deg;
+  }
+
+  .post-image {
+    overflow: hidden;
+    transition: transform 0.3s ease;
+  }
+
+  .post-image img {
+    width: 100%;
+    height: auto;
+    transition: transform 0.5s ease;
+  }
+
+  .post-item a:hover .post-image img {
+    transform: scale(1.1);
+  }
+
+  [data-tilt] {
+    transform-style: preserve-3d;
+    transition: transform 0.1s ease-out;
+  }
+
+  .post-content {
+    padding: 1.5rem;
   }
 
   .post-title {
-    font-size: 1.1rem;
-    margin-bottom: 0.3rem;
-    color: #000;
-  }
-
-  .post-description {
-    color: #333;
-    margin-bottom: 0.3rem;
-    line-height: 1.3;
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem;
+    line-height: 1.4;
   }
 
   .post-date {
-    font-size: 0.8rem;
-    color: #666;
+    font-size: 0.75rem;
+    color: #888;
+    margin: 0;
   }
 
-  .win95-button-container {
-    display: flex;
-    justify-content: center;
-    margin-top: 10px;
+  .view-all {
+    text-align: center;
   }
 
-  .win95-button,
-  .view-all-button a {
-    display: inline-block;
-    background-color: #c0c0c0;
-    color: #000;
-    padding: 5px 10px;
-    border: 2px solid;
-    border-color: #ffffff #808080 #808080 #ffffff;
-    font-size: 1rem;
-    cursor: pointer;
+  .cta-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1.25rem 3rem;
+    background: white;
+    color: var(--blue);
     text-decoration: none;
-    text-align: center;
+    font-weight: 900;
+    font-size: 1rem;
+    letter-spacing: 0.1em;
+    border: 3px solid var(--blue);
+    border-radius: 100px;
+    transition: all 0.3s ease;
+    position: relative;
   }
 
-  .win95-button:active,
-  .view-all-button a:active {
-    border-color: #808080 #ffffff #ffffff #808080;
+  .cta-btn::after {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: 100px;
+    padding: 3px;
+    background: conic-gradient(from -90deg, var(--blue) var(--border-angle), transparent var(--border-angle));
+    --border-angle: 0deg;
+    transition: --border-angle 0.5s ease-out;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
   }
 
-  .view-all-button {
-    text-align: center;
-    margin-top: 1rem;
+  .cta-btn:hover::after {
+    --border-angle: 360deg;
   }
 
-  .footer-section {
-    margin-top: 1.5rem;
-    padding-top: 10px;
-    border-top: 2px solid;
-    border-color: #808080 #ffffff #ffffff #808080;
+  .cta-arrow {
+    font-size: 1.25rem;
+    transition: transform 0.3s ease;
+  }
+
+  .cta-btn:hover .cta-arrow {
+    transform: translateX(5px);
+  }
+
+  /* リンクセクション */
+  .link-buttons {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .link-btn {
+    flex: 1;
+    min-width: 250px;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem 2rem;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+    text-decoration: none;
+    color: #2D3436;
+    font-weight: 700;
+    transition: all 0.3s ease;
+    position: relative;
+  }
+
+  .link-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 16px;
+    padding: 3px;
+    background: conic-gradient(from -90deg, var(--blue) var(--border-angle), transparent var(--border-angle));
+    --border-angle: 0deg;
+    transition: --border-angle 0.5s ease-out;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+  }
+
+  .link-btn:hover::before {
+    --border-angle: 360deg;
+  }
+
+  .link-num {
+    font-size: 0.75rem;
+    font-weight: 900;
+    color: white;
+    background: var(--blue);
+    padding: 0.5em 0.75em;
+    border-radius: 6px;
+    letter-spacing: 0.1em;
+  }
+
+  .link-text {
+    flex: 1;
+    font-size: 1.125rem;
+  }
+
+  .link-arrow {
+    color: var(--blue);
+    transition: transform 0.3s ease;
+  }
+
+  .link-btn:hover .link-arrow {
+    transform: translateX(5px);
+  }
+
+  /* コンタクトセクション */
+  .contact-box {
+    display: inline-block;
+    background: white;
+    padding: 2rem 3rem;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+    transform: rotate(-1deg);
+    position: relative;
+    transition: all 0.3s ease;
+  }
+
+  .contact-box::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 16px;
+    padding: 3px;
+    background: conic-gradient(from -90deg, var(--blue) var(--border-angle), transparent var(--border-angle));
+    --border-angle: 0deg;
+    transition: --border-angle 0.5s ease-out;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+  }
+
+  .contact-box:hover::before {
+    --border-angle: 360deg;
+  }
+
+  .contact-label {
+    display: block;
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    color: var(--blue);
+    margin-bottom: 0.5rem;
+  }
+
+  .contact-email {
+    font-size: clamp(1.25rem, 4vw, 2rem);
+    font-weight: 900;
+    margin: 0;
+  }
+
+  .at {
+    color: var(--blue);
+    margin: 0 0.1em;
+  }
+
+  /* レスポンシブ */
+  @media (max-width: 768px) {
+    html {
+      overflow-x: hidden;
+    }
+
+    body {
+      overflow-x: hidden;
+      width: 100%;
+      max-width: 100vw;
+    }
+
+    main {
+      padding: 0 1rem;
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+
+    /* ヒーロー */
+    .hero {
+      min-height: auto;
+      padding: 3rem 0 2rem;
+      width: 100%;
+      align-items: center;
+    }
+
+    .hero-bg-text {
+      display: none;
+    }
+
+    .hero-content {
+      transform: none !important;
+      opacity: 1 !important;
+      width: 100%;
+      max-width: 100%;
+    }
+
+    .name-container {
+      margin-bottom: 1.5rem;
+      width: 100%;
+    }
+
+    .name-main {
+      font-size: 3rem;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .name-main .char {
+      --r: 0deg;
+    }
+
+    .name-sub {
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+    }
+
+    .name-deco {
+      display: none;
+    }
+
+    .floating-elements {
+      position: relative;
+      width: 100%;
+      height: auto;
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .float-item {
+      position: relative;
+      top: auto;
+      left: auto;
+      right: auto;
+      bottom: auto;
+      font-size: 0.6rem;
+      padding: 0.4em 0.8em;
+    }
+
+    .scroll-hint {
+      position: relative;
+      bottom: auto;
+      margin-top: 2rem;
+    }
+
+    .scroll-hint span {
+      font-size: 0.5rem;
+    }
+
+    .scroll-line {
+      height: 30px;
+    }
+
+    .tagline-wrapper {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+    }
+
+    .tagline-box {
+      padding: 0.75rem 1.25rem;
+      transform: rotate(0deg);
+      max-width: calc(100% - 2rem);
+    }
+
+    .tagline {
+      font-size: 0.9rem;
+    }
+
+    /* 装飾要素（モバイル用に調整） */
+    .deco {
+      display: block;
+    }
+
+    .deco-circle-1 {
+      width: 150px;
+      height: 150px;
+      top: -50px;
+      right: -50px;
+    }
+
+    .deco-circle-2 {
+      width: 100px;
+      height: 100px;
+      top: 30%;
+      left: -40px;
+    }
+
+    .deco-circle-3 {
+      width: 80px;
+      height: 80px;
+      top: 20%;
+      right: 2%;
+    }
+
+    .deco-cross-1, .deco-cross-2, .deco-cross-3 {
+      font-size: 1.25rem;
+    }
+
+    .deco-cross-1 { top: 15%; left: 5%; }
+    .deco-cross-2 { top: 35%; right: 8%; }
+    .deco-cross-3 { top: 60%; left: 10%; }
+
+    /* ドットパターン（モバイル用に調整） */
+    .dots-container {
+      display: block;
+    }
+
+    .dots-1 {
+      width: 50px;
+      height: 50px;
+      top: 10%;
+      right: 10%;
+    }
+
+    .dots-2 {
+      width: 40px;
+      height: 60px;
+      top: 40%;
+      left: 5%;
+    }
+
+    .dots-3 {
+      width: 60px;
+      height: 40px;
+      top: 65%;
+      right: 8%;
+    }
+
+    .dots-4 {
+      width: 35px;
+      height: 50px;
+      top: 80%;
+      left: 15%;
+    }
+
+    /* マーキー */
+    .marquee-section {
+      transform: none;
+      padding: 0.75rem 0;
+      margin-left: -1rem;
+      margin-right: -1rem;
+      width: 100vw;
+      max-width: 100vw;
+      overflow: hidden;
+    }
+
+    .marquee-section.alt {
+      transform: none;
+    }
+
+    .marquee-content span {
+      font-size: 0.85rem;
+    }
+
+    .marquee-content {
+      gap: 1rem;
+    }
+
+    /* 横スクロールテキスト非表示 */
+    .horizontal-text-section {
+      display: none;
+    }
+
+    /* セクション */
+    section {
+      padding: 2.5rem 0;
+      width: 100%;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .section-header {
+      margin-bottom: 1.5rem;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .section-label {
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+      justify-content: center;
+    }
+
+    .label-num,
+    .label-text {
+      font-size: 0.6rem;
+    }
+
+    .section-title {
+      font-size: 1.75rem;
+    }
+
+    /* スプリットテキストアニメーション無効化 */
+    .split-char {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+
+    /* About */
+    .about-cards {
+      grid-template-columns: 1fr;
+      gap: 0.75rem;
+      max-width: 250px;
+      margin: 0 auto 1.5rem;
+      width: 100%;
+    }
+
+    .about-card {
+      padding: 1rem;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .card-label {
+      font-size: 0.55rem;
+    }
+
+    .card-value {
+      font-size: 0.9rem;
+    }
+
+    .more-btn {
+      padding: 0.6rem 1rem;
+      font-size: 0.7rem;
+    }
+
+    /* ブログ */
+    .post-list {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+      max-width: 280px;
+      margin: 0 auto 2rem;
+      width: 100%;
+      padding: 0;
+    }
+
+    .post-item {
+      display: block;
+      width: 100%;
+    }
+
+    .post-item a {
+      max-width: 100%;
+      width: 100%;
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+
+    .post-image {
+      transform: none !important;
+      overflow: hidden;
+      width: 100%;
+    }
+
+    .post-image img {
+      width: 100% !important;
+      height: auto !important;
+      max-width: 100% !important;
+    }
+
+    .post-content {
+      padding: 0.875rem;
+    }
+
+    .post-title {
+      font-size: 0.875rem;
+    }
+
+    .post-date {
+      font-size: 0.65rem;
+    }
+
+    .view-all {
+      margin-top: 1rem;
+      display: flex;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .cta-btn {
+      padding: 0.6rem 1.25rem;
+      font-size: 0.7rem;
+      border-width: 2px;
+    }
+
+    /* リンク */
+    .link-buttons {
+      flex-direction: column;
+      gap: 0.5rem;
+      max-width: 220px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .link-btn {
+      min-width: auto;
+      padding: 0.75rem 1rem;
+      gap: 0.5rem;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .link-num {
+      padding: 0.25em 0.4em;
+      font-size: 0.55rem;
+    }
+
+    .link-text {
+      font-size: 0.75rem;
+    }
+
+    /* コンタクト */
+    .contact-box {
+      padding: 1rem 1.25rem;
+      transform: rotate(0deg);
+      max-width: 220px;
+      box-sizing: border-box;
+    }
+
+    .contact-label {
+      font-size: 0.5rem;
+    }
+
+    .contact-email {
+      font-size: 0.7rem;
+      word-break: break-all;
+    }
+  }
+
+  /* さらに小さい画面 */
+  @media (max-width: 400px) {
+    main {
+      padding: 0 0.75rem;
+    }
+
+    .hero {
+      padding: 2rem 0 1.5rem;
+    }
+
+    .name-main {
+      font-size: 2.25rem;
+    }
+
+    .name-sub {
+      font-size: 0.55rem;
+    }
+
+    .tagline {
+      font-size: 0.8rem;
+    }
+
+    .section-title {
+      font-size: 1.5rem;
+    }
+
+    .floating-elements {
+      gap: 0.5rem;
+    }
+
+    .float-item {
+      font-size: 0.5rem;
+      padding: 0.3em 0.6em;
+    }
+
+    .scroll-hint {
+      margin-top: 1.5rem;
+    }
+
+    .scroll-line {
+      height: 25px;
+    }
+
+    /* 装飾要素（さらに小さく） */
+    .deco-circle-1 {
+      width: 100px;
+      height: 100px;
+    }
+
+    .deco-circle-2 {
+      width: 70px;
+      height: 70px;
+    }
+
+    .deco-circle-3 {
+      width: 50px;
+      height: 50px;
+    }
+
+    .deco-cross-1, .deco-cross-2, .deco-cross-3 {
+      font-size: 1rem;
+    }
+
+    .dots-1, .dots-2, .dots-3, .dots-4 {
+      transform: scale(0.7);
+    }
+
+    .marquee-section {
+      margin-left: -0.75rem;
+      margin-right: -0.75rem;
+      width: 100vw;
+    }
+
+    .marquee-content span {
+      font-size: 0.75rem;
+    }
+
+    .about-cards {
+      max-width: 200px;
+    }
+
+    .about-card {
+      padding: 0.75rem;
+    }
+
+    .card-value {
+      font-size: 0.8rem;
+    }
+
+    .post-list {
+      max-width: 220px;
+    }
+
+    .post-title {
+      font-size: 0.75rem;
+    }
+
+    .link-buttons {
+      max-width: 180px;
+    }
+
+    .link-text {
+      font-size: 0.65rem;
+    }
+
+    .contact-box {
+      max-width: 180px;
+    }
+
+    .contact-email {
+      font-size: 0.6rem;
+    }
   }
 </style>

@@ -15,102 +15,208 @@ const { banners } = Astro.props;
 ---
 
 {banners && banners.length > 0 && (
-  <div class="banner-section">
-    <div class="win95-section-title">バナー(相互募集中)</div>
-    <div class="win95-fieldset">
-      <div class="banner-grid">
-        {
-          banners.map((banner) => (
-            <a 
-              href={banner.href} 
-              class="banner-link" 
-              title={banner.title || banner.alt}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <img 
-                src={banner.src} 
-                alt={banner.alt}
-                class="banner-image"
-                loading="lazy"
-              />
-            </a>
-          ))
-        }
-      </div>
+  <section class="banner-section" data-animate>
+    <div class="banner-header">
+      <span class="banner-label">05</span>
+      <span class="banner-label-text">LINKS</span>
     </div>
-  </div>
+    <h3 class="banner-title">バナー</h3>
+    <p class="banner-subtitle">相互リンク募集中</p>
+    <div class="banner-grid">
+      {
+        banners.map((banner, index) => (
+          <a
+            href={banner.href}
+            class="banner-link"
+            title={banner.title || banner.alt}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={`--delay: ${index * 0.1}s`}
+          >
+            <img
+              src={banner.src}
+              alt={banner.alt}
+              class="banner-image"
+              loading="lazy"
+            />
+          </a>
+        ))
+      }
+    </div>
+  </section>
 )}
 
 <style>
   .banner-section {
-    margin: 15px 0;
+    padding: 4rem 0;
   }
 
-  .win95-section-title {
-    font-weight: bold;
-    font-size: 1.2rem;
-    margin-bottom: 5px;
+  .banner-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
   }
 
-  .win95-fieldset {
-    border: 2px solid;
-    border-color: #808080 #ffffff #ffffff #808080;
-    padding: 10px;
-    background-color: #c0c0c0;
+  .banner-label {
+    font-size: 0.75rem;
+    font-weight: 900;
+    color: white;
+    background: #4ECDC4;
+    padding: 0.25em 0.5em;
+    border-radius: 4px;
+  }
+
+  .banner-label-text {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    color: #4ECDC4;
+  }
+
+  .banner-title {
+    font-size: clamp(2rem, 8vw, 3rem);
+    font-weight: 900;
+    margin: 0 0 0.5rem;
+    display: inline-block;
+    transform: rotate(-2deg);
+  }
+
+  .banner-subtitle {
+    font-size: 0.875rem;
+    color: #888;
+    margin: 0 0 2rem;
   }
 
   .banner-grid {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
-    justify-content: center;
+    gap: 1rem;
+    justify-content: flex-start;
     align-items: center;
   }
 
   .banner-link {
-    display: inline-block;
+    display: block;
     text-decoration: none;
-    transition: all 0.2s ease;
-    border: 1px solid transparent;
-    padding: 2px;
+    background: white;
+    padding: 0.75rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    opacity: 0;
+    transform: translateY(20px);
+    animation: bannerIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation-delay: var(--delay, 0s);
+    position: relative;
   }
 
-  .banner-link:hover {
-    border: 1px solid #0000ff;
-    background-color: #e0e0e0;
+  @keyframes bannerIn {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
-  .banner-link:active {
-    border: 1px solid #000080;
-    background-color: #d0d0d0;
+  @property --border-angle {
+    syntax: '<angle>';
+    initial-value: 0deg;
+    inherits: false;
+  }
+
+  .banner-link::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 12px;
+    padding: 3px;
+    background: conic-gradient(from -90deg, #4ECDC4 var(--border-angle), transparent var(--border-angle));
+    --border-angle: 0deg;
+    transition: --border-angle 0.5s ease-out;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+  }
+
+  .banner-link:hover::after {
+    --border-angle: 360deg;
   }
 
   .banner-image {
     display: block;
     width: 200px;
-    height: 50px;
+    height: 40px;
     object-fit: contain;
     border: none;
   }
 
-  /* レスポンシブ対応 */
-  @media (max-width: 600px) {
-    .banner-grid {
+  @media (max-width: 768px) {
+    .banner-section {
+      padding: 2.5rem 0;
+      display: flex;
       flex-direction: column;
       align-items: center;
+      text-align: center;
     }
-    
+
+    .banner-header {
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+      justify-content: center;
+    }
+
+    .banner-label,
+    .banner-label-text {
+      font-size: 0.6rem;
+    }
+
+    .banner-title {
+      font-size: 1.75rem;
+      transform: rotate(0deg);
+    }
+
+    .banner-subtitle {
+      font-size: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .banner-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.5rem;
+      justify-items: center;
+    }
+
+    .banner-link {
+      padding: 0.4rem;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+    }
+
     .banner-image {
-      width: 180px;
-      height: 45px;
+      width: 100%;
+      max-width: 120px;
+      height: auto;
+      aspect-ratio: 5 / 1;
     }
   }
 
   @media (max-width: 400px) {
+    .banner-section {
+      padding: 2rem 0;
+    }
+
+    .banner-grid {
+      gap: 0.4rem;
+    }
+
+    .banner-link {
+      padding: 0.3rem;
+    }
+
     .banner-image {
-      width: 160px;
-      height: 40px;
+      max-width: 100px;
     }
   }
 </style>
