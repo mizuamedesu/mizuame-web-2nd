@@ -78,10 +78,30 @@ const banners = [
           <div class="name-container">
             <span class="name-sub">SOFTWARE ENGINEER</span>
             <h1 class="name-main">
-              <span class="char" style="--i:0; --r:-5deg">み</span>
-              <span class="char" style="--i:1; --r:3deg">ず</span>
-              <span class="char" style="--i:2; --r:-2deg">あ</span>
-              <span class="char" style="--i:3; --r:4deg">め</span>
+              <span class="char-wrapper" style="--i:0; --r:-5deg">
+                <svg class="char-svg" viewBox="0 0 100 100">
+                  <text class="char-fill-text" x="50" y="55" text-anchor="middle" dominant-baseline="central">み</text>
+                  <text class="char-stroke-text" x="50" y="55" text-anchor="middle" dominant-baseline="central">み</text>
+                </svg>
+              </span>
+              <span class="char-wrapper" style="--i:1; --r:3deg">
+                <svg class="char-svg" viewBox="0 0 100 100">
+                  <text class="char-fill-text" x="50" y="55" text-anchor="middle" dominant-baseline="central">ず</text>
+                  <text class="char-stroke-text" x="50" y="55" text-anchor="middle" dominant-baseline="central">ず</text>
+                </svg>
+              </span>
+              <span class="char-wrapper" style="--i:2; --r:-2deg">
+                <svg class="char-svg" viewBox="0 0 100 100">
+                  <text class="char-fill-text" x="50" y="55" text-anchor="middle" dominant-baseline="central">あ</text>
+                  <text class="char-stroke-text" x="50" y="55" text-anchor="middle" dominant-baseline="central">あ</text>
+                </svg>
+              </span>
+              <span class="char-wrapper" style="--i:3; --r:4deg">
+                <svg class="char-svg" viewBox="0 0 100 100">
+                  <text class="char-fill-text" x="50" y="55" text-anchor="middle" dominant-baseline="central">め</text>
+                  <text class="char-stroke-text" x="50" y="55" text-anchor="middle" dominant-baseline="central">め</text>
+                </svg>
+              </span>
             </h1>
             <div class="name-deco">
               <span class="deco-text rotate-left">WORKS</span>
@@ -430,6 +450,19 @@ const banners = [
           element.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale(1)';
         });
       });
+
+      // ストロークアニメーション初期化
+      document.fonts.ready.then(() => {
+        const strokeTexts = document.querySelectorAll('.char-stroke-text');
+        strokeTexts.forEach((text) => {
+          const svgText = text as SVGTextElement;
+          // 日本語文字は複雑なので大きめの値を使用
+          const length = 2000;
+          svgText.style.strokeDasharray = `${length}`;
+          svgText.style.strokeDashoffset = `${length}`;
+        });
+      });
+
     </script>
   </body>
 </html>
@@ -672,23 +705,74 @@ const banners = [
     display: flex;
     justify-content: center;
     gap: 0.1em;
+    position: relative;
   }
 
-  .name-main .char {
+  .char-wrapper {
+    position: relative;
     display: inline-block;
-    animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-    animation-delay: calc(var(--i) * 0.1s + 0.3s);
+    width: 1em;
+    height: 1em;
     opacity: 0;
     transform: scale(0) rotate(var(--r));
-    color: var(--blue);
+    animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    animation-delay: calc(var(--i) * 0.15s + 0.3s);
+  }
+
+  .char-svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+
+  .char-stroke-text,
+  .char-fill-text {
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 90px;
+    font-weight: 900;
+  }
+
+  .char-stroke-text {
+    fill: none;
+    stroke: var(--blue);
+    stroke-width: 2;
+    stroke-dasharray: 2000;
+    stroke-dashoffset: 2000;
+    animation: drawStroke 2.5s ease-out forwards;
+    animation-delay: calc(var(--i) * 0.2s + 0.5s);
+  }
+
+  .char-fill-text {
+    fill: var(--blue);
+    opacity: 0;
+    animation: fillIn 0.4s ease-out forwards;
+    animation-delay: calc(var(--i) * 0.15s + 1.3s);
+  }
+
+  @keyframes popIn {
+    to {
+      opacity: 1;
+      transform: scale(1) rotate(var(--r));
+    }
+  }
+
+  @keyframes drawStroke {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  @keyframes fillIn {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
   }
 
   @keyframes slideIn {
     to { opacity: 1; transform: translateY(0); }
-  }
-
-  @keyframes popIn {
-    to { opacity: 1; transform: scale(1) rotate(var(--r)); }
   }
 
   .name-deco {
@@ -1375,7 +1459,7 @@ const banners = [
       width: 100%;
     }
 
-    .name-main .char {
+    .char-wrapper {
       --r: 0deg;
     }
 
