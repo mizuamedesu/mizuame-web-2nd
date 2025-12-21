@@ -1,0 +1,303 @@
+---
+import BaseHead from "../components/BaseHead.astro";
+import Footer from "../components/Footer.astro";
+import { SITE_TITLE } from "../consts";
+---
+
+<!doctype html>
+<html lang="ja">
+  <head>
+    <BaseHead title={`名刺 | ${SITE_TITLE}`} description="みずあめの名刺を3Dで見ることができます" />
+  </head>
+  <body>
+    <main>
+      <div class="container">
+        <div class="header">
+          <h1>名刺</h1>
+          <p class="description">カードをドラッグして回転 / クリックで裏返す</p>
+        </div>
+
+        <div class="card-scene" id="cardScene">
+          <div class="card" id="card">
+            <div class="card-face card-front">
+              <img src="/business_card_front.png" alt="名刺 表面" draggable="false" />
+            </div>
+            <div class="card-face card-back">
+              <img src="/business_card_back.png" alt="名刺 裏面" draggable="false" />
+            </div>
+          </div>
+        </div>
+
+        <div class="controls-section">
+          <button class="control-btn" id="flipBtn">裏返す</button>
+          <button class="control-btn secondary" id="resetBtn">リセット</button>
+        </div>
+      </div>
+
+      <div class="back-to-top">
+        <a href="/">トップへ戻る</a>
+      </div>
+    </main>
+    <Footer />
+
+    <script>
+      class Card3DViewer {
+        private card: HTMLElement;
+        private scene: HTMLElement;
+        private rotateX: number = 0;
+        private rotateY: number = 0;
+        private targetRotateX: number = 0;
+        private targetRotateY: number = 0;
+        private isDragging: boolean = false;
+        private lastX: number = 0;
+        private lastY: number = 0;
+
+        constructor() {
+          this.card = document.getElementById('card')!;
+          this.scene = document.getElementById('cardScene')!;
+          this.init();
+        }
+
+        private init(): void {
+          // Mouse events
+          this.scene.addEventListener('mousedown', this.onMouseDown.bind(this));
+          document.addEventListener('mousemove', this.onMouseMove.bind(this));
+          document.addEventListener('mouseup', this.onMouseUp.bind(this));
+
+          // Touch events
+          this.scene.addEventListener('touchstart', this.onTouchStart.bind(this), { passive: false });
+          document.addEventListener('touchmove', this.onTouchMove.bind(this), { passive: false });
+          document.addEventListener('touchend', this.onTouchEnd.bind(this));
+
+          // Double click to flip
+          this.scene.addEventListener('dblclick', this.flip.bind(this));
+
+          // Buttons
+          document.getElementById('flipBtn')?.addEventListener('click', this.flip.bind(this));
+          document.getElementById('resetBtn')?.addEventListener('click', this.reset.bind(this));
+
+          // Start animation loop
+          this.animate();
+        }
+
+        private onMouseDown(e: MouseEvent): void {
+          this.isDragging = true;
+          this.lastX = e.clientX;
+          this.lastY = e.clientY;
+          this.scene.style.cursor = 'grabbing';
+        }
+
+        private onMouseMove(e: MouseEvent): void {
+          if (!this.isDragging) return;
+
+          const deltaX = e.clientX - this.lastX;
+          const deltaY = e.clientY - this.lastY;
+
+          this.targetRotateY += deltaX * 0.5;
+          this.targetRotateX -= deltaY * 0.5;
+
+          this.targetRotateX = Math.max(-60, Math.min(60, this.targetRotateX));
+
+          this.lastX = e.clientX;
+          this.lastY = e.clientY;
+        }
+
+        private onMouseUp(): void {
+          this.isDragging = false;
+          this.scene.style.cursor = 'grab';
+        }
+
+        private onTouchStart(e: TouchEvent): void {
+          if (e.touches.length === 1) {
+            e.preventDefault();
+            this.isDragging = true;
+            this.lastX = e.touches[0].clientX;
+            this.lastY = e.touches[0].clientY;
+          }
+        }
+
+        private onTouchMove(e: TouchEvent): void {
+          if (!this.isDragging || e.touches.length !== 1) return;
+          e.preventDefault();
+
+          const deltaX = e.touches[0].clientX - this.lastX;
+          const deltaY = e.touches[0].clientY - this.lastY;
+
+          this.targetRotateY += deltaX * 0.5;
+          this.targetRotateX -= deltaY * 0.5;
+
+          this.targetRotateX = Math.max(-60, Math.min(60, this.targetRotateX));
+
+          this.lastX = e.touches[0].clientX;
+          this.lastY = e.touches[0].clientY;
+        }
+
+        private onTouchEnd(): void {
+          this.isDragging = false;
+        }
+
+        private flip(): void {
+          this.targetRotateY += 180;
+        }
+
+        private reset(): void {
+          this.targetRotateX = 0;
+          this.targetRotateY = 0;
+        }
+
+        private animate(): void {
+          this.rotateX += (this.targetRotateX - this.rotateX) * 0.1;
+          this.rotateY += (this.targetRotateY - this.rotateY) * 0.1;
+
+          this.card.style.transform = `rotateX(${this.rotateX}deg) rotateY(${this.rotateY}deg)`;
+
+          requestAnimationFrame(this.animate.bind(this));
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', () => {
+        new Card3DViewer();
+      });
+    </script>
+  </body>
+</html>
+
+<style>
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .header h1 {
+    font-size: 2.5rem;
+    margin: 0 0 1rem 0;
+    color: #2c3e50;
+    font-weight: 700;
+  }
+
+  .description {
+    font-size: 1.1rem;
+    color: #666;
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  .card-scene {
+    perspective: 1000px;
+    cursor: grab;
+    display: flex;
+    justify-content: center;
+    margin: 2rem 0;
+  }
+
+  .card {
+    position: relative;
+    transform-style: preserve-3d;
+  }
+
+  .card-face {
+    backface-visibility: hidden;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  .card-face.card-back {
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
+  .card-face img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+  }
+
+  .card-front {
+    z-index: 2;
+  }
+
+  .card-back {
+    transform: rotateY(180deg);
+  }
+
+  .controls-section {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin: 2rem 0;
+  }
+
+  .control-btn {
+    display: inline-block;
+    background: #2c3e50;
+    color: #fff;
+    padding: 0.75rem 2rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .control-btn:hover {
+    background: #34495e;
+  }
+
+  .control-btn.secondary {
+    background: #e0e0e0;
+    color: #333;
+  }
+
+  .control-btn.secondary:hover {
+    background: #d0d0d0;
+  }
+
+  .back-to-top {
+    text-align: center;
+    margin-top: 2em;
+    margin-bottom: 2em;
+  }
+
+  .back-to-top a {
+    display: inline-block;
+    padding: 0.75em 1.5em;
+    background: rgb(var(--accent));
+    color: #000000;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 1rem;
+    font-weight: bold;
+  }
+
+  .back-to-top a:hover {
+    background: rgb(var(--accent-dark));
+  }
+
+  @media (max-width: 480px) {
+    .container {
+      padding: 1rem;
+    }
+
+    .header h1 {
+      font-size: 1.5rem;
+    }
+
+    .controls-section {
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .control-btn {
+      width: 200px;
+    }
+  }
+</style>
