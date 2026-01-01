@@ -6,8 +6,9 @@ import { SITE_TITLE, SITE_DESCRIPTION } from "../consts";
 import { getCollection } from "astro:content";
 import FormattedDate from "../components/FormattedDate.astro";
 
-// ブログ記事を取得し、日付順にソートして最新3件を取得
+// ブログ記事を取得し、日本語記事のみをフィルタして日付順にソート、最新3件を取得
 const posts = (await getCollection("blog"))
+  .filter((post) => post.id.startsWith("ja/"))
   .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
   .slice(0, 3);
 
@@ -202,7 +203,7 @@ const banners = [
           {
             posts.map((post, index) => (
               <li class="post-item" data-scroll-in="bottom" style={`--delay: ${index * 0.15}s`}>
-                <a href={`/blog/${post.id}/`}>
+                <a href={`/blog/${post.id.replace(/^ja\//, "")}/`}>
                   <div class="post-image" data-tilt>
                     <img src={post.data.heroImage} alt="" />
                   </div>
