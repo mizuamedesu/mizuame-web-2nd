@@ -1,9 +1,14 @@
 ---
+interface Props {
+    lang?: 'ja' | 'en';
+}
 
+const { lang = 'ja' } = Astro.props;
 ---
 
-<section>
+<section class="giscus-container" data-lang={lang}>
     <script
+        is:inline
         src="https://giscus.app/client.js"
         data-repo="mizuamedesu/giscus"
         data-repo-id="R_kgDONY9v_Q"
@@ -14,8 +19,46 @@
         data-reactions-enabled="1"
         data-emit-metadata="0"
         data-input-position="top"
-        data-theme="light_tritanopia"
-        data-lang="ja"
+        data-theme="light"
+        data-lang={lang}
         crossorigin="anonymous"
         async></script>
 </section>
+
+<script>
+    // ページ読み込み時にテーマを同期
+    function syncGiscusTheme() {
+        const theme = document.documentElement.dataset.theme || 'light';
+        const iframe = document.querySelector<HTMLIFrameElement>('iframe.giscus-frame');
+        if (iframe && iframe.contentWindow) {
+            iframe.contentWindow.postMessage(
+                {
+                    giscus: {
+                        setConfig: {
+                            theme: theme === 'dark' ? 'dark' : 'light'
+                        }
+                    }
+                },
+                'https://giscus.app'
+            );
+        }
+    }
+
+    // Giscusのiframeが読み込まれた後にテーマを同期
+    const observer = new MutationObserver((mutations) => {
+        for (const mutation of mutations) {
+            for (const node of mutation.addedNodes) {
+                if (node instanceof HTMLIFrameElement && node.classList.contains('giscus-frame')) {
+                    node.addEventListener('load', syncGiscusTheme);
+                }
+            }
+        }
+    });
+
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    // DOMContentLoadedでも試行
+    document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(syncGiscusTheme, 1000);
+    });
+</script>

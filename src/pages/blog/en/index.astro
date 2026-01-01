@@ -1,17 +1,18 @@
 ---
-import BaseHead from '../../components/BaseHead.astro';
-import Footer from '../../components/Footer.astro';
-import BlogToggleBar from '../../components/BlogToggleBar.astro';
-import { SITE_TITLE, SITE_DESCRIPTION } from '../../consts';
+import BaseHead from '../../../components/BaseHead.astro';
+import Footer from '../../../components/Footer.astro';
+import BlogToggleBar from '../../../components/BlogToggleBar.astro';
 import { getCollection } from 'astro:content';
-import FormattedDate from '../../components/FormattedDate.astro';
-import '../../styles/blog-theme.css';
+import FormattedDate from '../../../components/FormattedDate.astro';
+import '../../../styles/blog-theme.css';
 
-const lang = 'ja';
+const lang = 'en';
+const SITE_TITLE = "Mizuame's Portfolio";
+const SITE_DESCRIPTION = 'Portfolio website';
 
-// 日本語記事のみを取得（ja/で始まるもの）
+// 英語記事のみを取得（en/で始まるもの）
 const posts = (await getCollection('blog'))
-	.filter((post) => post.id.startsWith('ja/'))
+	.filter((post) => post.id.startsWith('en/'))
 	.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 ---
 
@@ -21,7 +22,7 @@ const posts = (await getCollection('blog'))
 		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
 		<!-- Google AdSense Script -->
 		<script
-			async 
+			async
 			src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9132595658588908"
 			crossorigin="anonymous"></script>
 		<style>
@@ -71,19 +72,19 @@ const posts = (await getCollection('blog'))
 			}
 			.title {
 				margin: 0;
-				color: rgb(var(--black));
+				color: var(--blog-text);
 				line-height: 1;
 			}
 			.date {
 				margin: 0;
-				color: rgb(var(--gray));
+				color: var(--blog-text-muted);
 			}
 			ul li a:hover h4,
 			ul li a:hover .date {
-				color: rgb(var(--accent));
+				color: var(--blog-link);
 			}
 			ul a:hover img {
-				box-shadow: var(--box-shadow);
+				box-shadow: var(--blog-shadow);
 			}
 			@media (max-width: 720px) {
 				ul {
@@ -100,7 +101,6 @@ const posts = (await getCollection('blog'))
 					font-size: 1.563em;
 				}
 			}
-			/* 「トップへ戻る」ボタンのスタイル */
 			.back-to-top {
 				text-align: center;
 				margin-top: 2em;
@@ -109,15 +109,20 @@ const posts = (await getCollection('blog'))
 			.back-to-top a {
 				display: inline-block;
 				padding: 0.75em 1.5em;
-				background: rgb(var(--accent));
-				color: #000000;
+				background: var(--blog-link);
+				color: #ffffff;
 				border-radius: 8px;
 				text-decoration: none;
 				font-size: 1rem;
 				font-weight: bold;
 			}
 			.back-to-top a:hover {
-				background: rgb(var(--accent-dark));
+				background: var(--blog-link-hover);
+			}
+			.no-posts {
+				text-align: center;
+				padding: 3rem 1rem;
+				color: var(--blog-text-muted);
 			}
 		</style>
 	</head>
@@ -125,24 +130,29 @@ const posts = (await getCollection('blog'))
 		<BlogToggleBar currentLang={lang} />
 		<main>
 			<section>
-				<ul>
-					{
-						posts.map((post) => (
+				{posts.length > 0 ? (
+					<ul>
+						{posts.map((post) => (
 							<li>
-								<a href={`/blog/${post.id.replace('ja/', '')}/`}>
+								<a href={`/blog/en/${post.id.replace('en/', '')}/`}>
 									<img width={720} height={360} src={post.data.heroImage} alt="" />
 									<h4 class="title">{post.data.title}</h4>
 									<p class="date">
-										<FormattedDate date={post.data.pubDate} lang={lang} />
+										<FormattedDate date={post.data.pubDate} lang="en" />
 									</p>
 								</a>
 							</li>
-						))
-					}
-				</ul>
+						))}
+					</ul>
+				) : (
+					<div class="no-posts">
+						<p>No English articles available yet.</p>
+						<p><a href="/blog/">View Japanese articles</a></p>
+					</div>
+				)}
 			</section>
 			<div class="back-to-top">
-				<a href="/">トップへ戻る</a>
+				<a href="/">Back to Top</a>
 			</div>
 		</main>
 		<Footer />

@@ -12,6 +12,10 @@ const blog = defineCollection({
 		pubDate: z.coerce.date(),
 		updatedDate: z.coerce.date().optional(),
 		heroImage: z.string().optional(),
+		// Language field (optional, derived from directory structure)
+		lang: z.enum(['ja', 'en']).optional(),
+		// Reference to the translated version's slug
+		translationOf: z.string().optional(),
 	}),
 });
 

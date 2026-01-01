@@ -6,20 +6,37 @@ import Comments from "../../components/Comments.astro";
 
 export async function getStaticPaths() {
 	const posts = await getCollection('blog');
-	return posts.map((post) => ({
-		params: { slug: post.id },
-		props: post,
-	}));
+
+	// 日本語記事のみをフィルタリング（ja/で始まるもの）
+	const jaPosts = posts.filter((post) => post.id.startsWith('ja/'));
+
+	// 英語版の存在を確認するためのセット
+	const enSlugs = new Set(
+		posts.filter((post) => post.id.startsWith('en/'))
+			.map((post) => post.id.replace('en/', ''))
+	);
+
+	return jaPosts.map((post) => {
+		const slug = post.id.replace('ja/', '');
+		const hasTranslation = enSlugs.has(slug);
+		return {
+			params: { slug },
+			props: { post, hasTranslation },
+		};
+	});
 }
 
-type Props = CollectionEntry<'blog'>;
+interface Props {
+	post: CollectionEntry<'blog'>;
+	hasTranslation: boolean;
+}
 
-const post = Astro.props;
+const { post, hasTranslation } = Astro.props;
 const { Content } = await render(post);
-const articleSlug = post.id; 
+const articleSlug = post.id.replace('ja/', '');
 ---
 
-<BlogPost {...post.data} slug={articleSlug}>
+<BlogPost {...post.data} slug={articleSlug} lang="ja" hasTranslation={hasTranslation}>
 	<Content />
-	<Comments />
+	<Comments lang="ja" />
 </BlogPost>

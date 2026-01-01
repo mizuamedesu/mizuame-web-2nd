@@ -3,16 +3,28 @@ import type { CollectionEntry } from "astro:content";
 import BaseHead from "../components/BaseHead.astro";
 import Footer from "../components/Footer.astro";
 import FormattedDate from "../components/FormattedDate.astro";
-import AudioPlayer from "../components/AudioPlayer.astro"; 
+import AudioPlayer from "../components/AudioPlayer.astro";
+import BlogToggleBar from "../components/BlogToggleBar.astro";
+import "../styles/blog-theme.css";
 
 type Props = CollectionEntry<"blog">["data"] & {
-  slug?: string; 
+  slug?: string;
+  lang?: 'ja' | 'en';
+  hasTranslation?: boolean;
 };
 
-const { title, description, pubDate, updatedDate, heroImage, slug } = Astro.props;
+const { title, description, pubDate, updatedDate, heroImage, slug, lang = 'ja', hasTranslation = false } = Astro.props;
+
+// UI翻訳
+const ui = {
+  ja: { backToList: '一覧へ戻る', lastUpdated: '最終更新' },
+  en: { backToList: 'Back to list', lastUpdated: 'Last updated' }
+};
+const t = ui[lang];
+const backUrl = lang === 'en' ? '/blog/en/' : '/blog/';
 ---
 
-<html lang="ja">
+<html lang={lang} data-blog-page>
 	<head>
 		<BaseHead title={title} description={description} image={heroImage} />
 		<script
@@ -77,18 +89,114 @@ const { title, description, pubDate, updatedDate, heroImage, slug } = Astro.prop
 			.back-to-list a {
 				display: inline-block;
 				padding: 0.5em 1em;
-				background: #bbb;
-				color: #fff;
 				border-radius: 4px;
 				text-decoration: none;
 			}
-			.back-to-list a:hover {
-				background: #999;
+
+			/* 画像ライトボックス */
+			.prose img {
+				cursor: zoom-in;
+				transition: opacity 0.2s;
+			}
+			.prose img:hover {
+				opacity: 0.9;
+			}
+			.lightbox-overlay {
+				position: fixed;
+				top: 0;
+				left: 0;
+				width: 100%;
+				height: 100%;
+				background: rgba(0, 0, 0, 0.9);
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				z-index: 1000;
+				cursor: zoom-out;
+				opacity: 0;
+				visibility: hidden;
+				transition: opacity 0.3s, visibility 0.3s;
+			}
+			.lightbox-overlay.active {
+				opacity: 1;
+				visibility: visible;
+			}
+			.lightbox-overlay img {
+				max-width: 90%;
+				max-height: 90%;
+				border-radius: 8px;
+				box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+			}
+			.lightbox-close {
+				position: absolute;
+				top: 20px;
+				right: 20px;
+				width: 40px;
+				height: 40px;
+				background: rgba(255, 255, 255, 0.2);
+				border: none;
+				border-radius: 50%;
+				color: white;
+				font-size: 24px;
+				cursor: pointer;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+			}
+			.lightbox-close:hover {
+				background: rgba(255, 255, 255, 0.3);
+			}
+
+		</style>
+		<!-- 動的要素用グローバルスタイル -->
+		<style is:global>
+			/* コードブロックコピーボタン */
+			.code-block-wrapper {
+				position: relative;
+			}
+			.copy-button {
+				position: absolute;
+				top: 8px;
+				right: 8px;
+				padding: 4px 10px;
+				background: rgba(100, 100, 100, 0.3);
+				border: 1px solid rgba(150, 150, 150, 0.3);
+				border-radius: 4px;
+				color: #666;
+				font-size: 12px;
+				cursor: pointer;
+				opacity: 0;
+				transition: opacity 0.2s, background 0.2s;
+				z-index: 10;
+			}
+			.code-block-wrapper:hover .copy-button {
+				opacity: 1;
+			}
+			.copy-button:hover {
+				background: rgba(100, 100, 100, 0.5);
+				color: #333;
+			}
+			.copy-button.copied {
+				background: #22c55e;
+				color: #fff;
+				border-color: #22c55e;
+				opacity: 1;
+			}
+			/* ダークモード用 */
+			[data-theme="dark"] .copy-button {
+				background: rgba(255, 255, 255, 0.1);
+				border-color: rgba(255, 255, 255, 0.2);
+				color: #aaa;
+			}
+			[data-theme="dark"] .copy-button:hover {
+				background: rgba(255, 255, 255, 0.2);
+				color: #fff;
 			}
 		</style>
 	</head>
 
 	<body>
+		<BlogToggleBar currentLang={lang} currentSlug={slug} hasTranslation={hasTranslation} />
 		<main>
 			<article>
 				<div class="hero-image">
@@ -106,12 +214,12 @@ const { title, description, pubDate, updatedDate, heroImage, slug } = Astro.prop
 				<div class="prose">
 					<div class="title">
 						<div class="date">
-							<FormattedDate date={pubDate} />
+							<FormattedDate date={pubDate} lang={lang} />
 							{
 								updatedDate && (
 									<div class="last-updated-on">
-										Last updated on{" "}
-										<FormattedDate date={updatedDate} />
+										{t.lastUpdated}{" "}
+										<FormattedDate date={updatedDate} lang={lang} />
 									</div>
 								)
 							}
@@ -127,9 +235,85 @@ const { title, description, pubDate, updatedDate, heroImage, slug } = Astro.prop
 				</div>
 			</article>
 			<div class="back-to-list">
-				<a href="/blog">一覧へ戻る</a>
+				<a href={backUrl}>{t.backToList}</a>
 			</div>
 		</main>
 		<Footer />
+
+		<!-- ライトボックスオーバーレイ -->
+		<div class="lightbox-overlay" id="lightbox">
+			<button class="lightbox-close" aria-label="Close">&times;</button>
+			<img src="" alt="" id="lightbox-img" />
+		</div>
+
+		<script is:inline>
+			// 画像ライトボックス
+			document.addEventListener('DOMContentLoaded', function() {
+				var lightbox = document.getElementById('lightbox');
+				var lightboxImg = document.getElementById('lightbox-img');
+				var closeBtn = document.querySelector('.lightbox-close');
+
+				if (!lightbox || !lightboxImg || !closeBtn) return;
+
+				// 記事内の画像にクリックイベントを追加
+				document.querySelectorAll('.prose img').forEach(function(img) {
+					img.addEventListener('click', function() {
+						lightboxImg.src = img.src;
+						lightbox.classList.add('active');
+						document.body.style.overflow = 'hidden';
+					});
+				});
+
+				// 閉じる
+				function closeLightbox() {
+					lightbox.classList.remove('active');
+					document.body.style.overflow = '';
+				}
+
+				lightbox.addEventListener('click', closeLightbox);
+				closeBtn.addEventListener('click', function(e) {
+					e.stopPropagation();
+					closeLightbox();
+				});
+				document.addEventListener('keydown', function(e) {
+					if (e.key === 'Escape') closeLightbox();
+				});
+
+				// コードブロックにコピーボタンを追加
+				document.querySelectorAll('.prose pre').forEach(function(pre) {
+					var parent = pre.parentNode;
+					if (!parent) return;
+
+					var wrapper = document.createElement('div');
+					wrapper.className = 'code-block-wrapper';
+					parent.insertBefore(wrapper, pre);
+					wrapper.appendChild(pre);
+
+					var button = document.createElement('button');
+					button.className = 'copy-button';
+					button.textContent = 'Copy';
+					wrapper.appendChild(button);
+
+					button.addEventListener('click', function() {
+						var code = pre.querySelector('code');
+						var text = code ? code.textContent : pre.textContent;
+
+						navigator.clipboard.writeText(text || '').then(function() {
+							button.textContent = 'Copied!';
+							button.classList.add('copied');
+							setTimeout(function() {
+								button.textContent = 'Copy';
+								button.classList.remove('copied');
+							}, 2000);
+						}).catch(function() {
+							button.textContent = 'Failed';
+							setTimeout(function() {
+								button.textContent = 'Copy';
+							}, 2000);
+						});
+					});
+				});
+			});
+		</script>
 	</body>
 </html>

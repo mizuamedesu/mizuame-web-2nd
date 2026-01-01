@@ -7,4 +7,12 @@ import sitemap from '@astrojs/sitemap';
 export default defineConfig({
 	site: 'https://mizuame.works',
 	integrations: [mdx(), sitemap()],
+	markdown: {
+		shikiConfig: {
+			themes: {
+				light: 'github-light',
+				dark: 'github-dark',
+			},
+		},
+	},
 });

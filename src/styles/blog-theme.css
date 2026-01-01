@@ -1,0 +1,294 @@
+/* ブログページ専用テーマCSS変数 */
+
+/* ライトモード (デフォルト) */
+[data-blog-page] {
+	--blog-bg: #ffffff;
+	--blog-bg-secondary: #f8f9fa;
+	--blog-text: rgb(34, 41, 57);
+	--blog-text-muted: rgb(96, 115, 159);
+	--blog-border: rgb(229, 233, 240);
+	--blog-card-bg: #ffffff;
+	--blog-code-bg: rgb(229, 233, 240);
+	--blog-link: #2337ff;
+	--blog-link-hover: #000d8a;
+	--blog-shadow: 0 2px 6px rgba(96, 115, 159, 0.25), 0 8px 24px rgba(96, 115, 159, 0.33);
+}
+
+/* ダークモード */
+[data-blog-page][data-theme="dark"] {
+	--blog-bg: #0f0f1a;
+	--blog-bg-secondary: #1a1a2e;
+	--blog-text: #e4e4e7;
+	--blog-text-muted: #a1a1aa;
+	--blog-border: #3f3f46;
+	--blog-card-bg: #1a1a2e;
+	--blog-code-bg: #27273a;
+	--blog-link: #6b7bff;
+	--blog-link-hover: #8b9aff;
+	--blog-shadow: 0 2px 6px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+/* ブログページ共通スタイル - !important で既存スタイルを上書き */
+[data-blog-page] body {
+	background-color: var(--blog-bg) !important;
+	color: var(--blog-text) !important;
+	transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* 記事本文内のリンクのみ青色に */
+[data-blog-page] .prose a {
+	color: var(--blog-link) !important;
+}
+
+[data-blog-page] .prose a:hover {
+	color: var(--blog-link-hover) !important;
+}
+
+[data-blog-page] h1,
+[data-blog-page] h2,
+[data-blog-page] h3,
+[data-blog-page] h4,
+[data-blog-page] h5,
+[data-blog-page] h6 {
+	color: var(--blog-text) !important;
+}
+
+[data-blog-page] p,
+[data-blog-page] li,
+[data-blog-page] span,
+[data-blog-page] div {
+	color: var(--blog-text);
+}
+
+/* インラインコード (pre外) */
+[data-blog-page] :not(pre) > code {
+	background-color: var(--blog-code-bg) !important;
+	color: var(--blog-text) !important;
+	padding: 0.2em 0.4em;
+	border-radius: 4px;
+	font-size: 0.9em;
+}
+
+/* コードブロック - 常にダークテーマ */
+[data-blog-page] pre {
+	padding: 1em;
+	border-radius: 8px;
+	overflow-x: auto;
+}
+
+/* コードブロックは常にダーク背景 */
+[data-blog-page] .astro-code,
+[data-blog-page] .astro-code span {
+	color: var(--shiki-dark) !important;
+	background-color: var(--shiki-dark-bg) !important;
+}
+
+/* pre内のcodeの背景を透明に */
+[data-blog-page] pre code {
+	background-color: transparent !important;
+	padding: 0;
+}
+
+[data-blog-page] hr {
+	border-top-color: var(--blog-border) !important;
+}
+
+[data-blog-page] blockquote {
+	border-left-color: var(--blog-link) !important;
+	color: var(--blog-text-muted) !important;
+}
+
+/* 記事本文 .prose の色を上書き */
+[data-blog-page] .prose {
+	color: var(--blog-text) !important;
+}
+
+[data-blog-page] .prose p,
+[data-blog-page] .prose li {
+	color: var(--blog-text) !important;
+}
+
+/* コード以外のspanのみ色を上書き */
+[data-blog-page] .prose span:not(pre span) {
+	color: var(--blog-text) !important;
+}
+
+/* 日付表示 */
+[data-blog-page] .date,
+[data-blog-page] time {
+	color: var(--blog-text-muted) !important;
+}
+
+/* 記事タイトル */
+[data-blog-page] .title {
+	color: var(--blog-text) !important;
+}
+
+/* 記事一覧のカード */
+[data-blog-page] ul li a {
+	color: var(--blog-text) !important;
+}
+
+[data-blog-page] ul li a:hover h4,
+[data-blog-page] ul li a:hover .date {
+	color: var(--blog-link) !important;
+}
+
+/* 戻るボタン */
+[data-blog-page] .back-to-list a,
+[data-blog-page] .back-to-top a {
+	background-color: var(--blog-link) !important;
+	color: #ffffff !important;
+	transition: background-color 0.2s ease;
+}
+
+[data-blog-page] .back-to-list a:hover,
+[data-blog-page] .back-to-top a:hover {
+	background-color: var(--blog-link-hover) !important;
+}
+
+/* フッター */
+[data-blog-page] footer {
+	background: var(--blog-bg-secondary) !important;
+	color: var(--blog-text-muted) !important;
+}
+
+[data-blog-page] footer .social-links a {
+	color: var(--blog-text-muted) !important;
+}
+
+[data-blog-page] footer .social-links a:hover {
+	color: var(--blog-text) !important;
+}
+
+/* 画像のボックスシャドウ */
+[data-blog-page][data-theme="dark"] img {
+	box-shadow: var(--blog-shadow);
+}
+
+/* テーブル */
+[data-blog-page] table {
+	color: var(--blog-text);
+}
+
+[data-blog-page] th,
+[data-blog-page] td {
+	border-color: var(--blog-border);
+}
+
+/* strong, em */
+[data-blog-page] strong,
+[data-blog-page] b {
+	color: var(--blog-text);
+}
+
+[data-blog-page] em,
+[data-blog-page] i {
+	color: var(--blog-text);
+}
+
+/* トグルバー */
+.blog-toggle-bar {
+	position: sticky;
+	top: 0;
+	z-index: 100;
+	display: flex;
+	justify-content: flex-end;
+	align-items: center;
+	gap: 1rem;
+	padding: 0.75rem 1rem;
+	background-color: var(--blog-bg-secondary);
+	border-bottom: 1px solid var(--blog-border);
+	transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* ダークモードトグルボタン */
+.theme-toggle {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 40px;
+	height: 40px;
+	padding: 0;
+	border: 1px solid var(--blog-border);
+	border-radius: 8px;
+	background-color: var(--blog-card-bg);
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.theme-toggle:hover {
+	background-color: var(--blog-bg-secondary);
+	border-color: var(--blog-link);
+}
+
+.theme-toggle svg {
+	width: 20px;
+	height: 20px;
+	fill: var(--blog-text);
+	transition: fill 0.3s ease;
+}
+
+.theme-toggle .icon-sun {
+	display: block;
+}
+
+.theme-toggle .icon-moon {
+	display: none;
+}
+
+[data-theme="dark"] .theme-toggle .icon-sun {
+	display: none;
+}
+
+[data-theme="dark"] .theme-toggle .icon-moon {
+	display: block;
+}
+
+/* 言語切り替え */
+.lang-switch {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	font-size: 0.875rem;
+}
+
+.lang-switch a {
+	padding: 0.375rem 0.75rem;
+	border-radius: 6px;
+	text-decoration: none !important;
+	color: var(--blog-text-muted) !important;
+	transition: all 0.2s ease;
+}
+
+.lang-switch a:hover {
+	background-color: var(--blog-card-bg) !important;
+	color: var(--blog-text) !important;
+}
+
+.lang-switch a.active {
+	background-color: var(--blog-link) !important;
+	color: #ffffff !important;
+}
+
+.lang-switch span {
+	color: var(--blog-border);
+}
+
+/* レスポンシブ */
+@media (max-width: 720px) {
+	.blog-toggle-bar {
+		padding: 0.5rem;
+		gap: 0.5rem;
+	}
+
+	.theme-toggle {
+		width: 36px;
+		height: 36px;
+	}
+
+	.lang-switch a {
+		padding: 0.25rem 0.5rem;
+		font-size: 0.8rem;
+	}
+}
