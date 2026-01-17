@@ -23,6 +23,12 @@
     "numPages": 15,
     "thumbnail": "/slides/thumbnails/AWSとCloudflareで感動のマルチベンダー バックエンド_20250201.png"
   },
+  "K8sクラスターでゲームサーバーをオーケストレーション_20260113.pdf": {
+    "name": "K8sクラスターでゲームサーバーをオーケストレーション_20260113",
+    "filename": "K8sクラスターでゲームサーバーをオーケストレーション_20260113.pdf",
+    "numPages": 48,
+    "thumbnail": "/slides/thumbnails/K8sクラスターでゲームサーバーをオーケストレーション_20260113.png"
+  },
   "OAuth2.0 PKCEを UEでまじめに扱う_20250314.pdf": {
     "name": "OAuth2.0 PKCEを UEでまじめに扱う_20250314",
     "filename": "OAuth2.0 PKCEを UEでまじめに扱う_20250314.pdf",
