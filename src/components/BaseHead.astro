@@ -53,3 +53,67 @@ const { title, description, image = '/ogp.png' } = Astro.props;
 <meta property="twitter:title" content={title} />
 <meta property="twitter:description" content={description} />
 <meta property="twitter:image" content={new URL(image, Astro.url)} />
+
+<!-- クリックエフェクト -->
+<script is:inline>
+document.addEventListener('DOMContentLoaded', () => {
+	// コンテナを作成
+	let container = document.querySelector('.click-effect-container');
+	if (!container) {
+		container = document.createElement('div');
+		container.className = 'click-effect-container';
+		document.body.appendChild(container);
+	}
+
+	const colors = ['#4ECDC4', '#FF6B6B', '#FFE66D', '#A06CD5', '#FF8ED4', '#FF9F43'];
+
+	document.addEventListener('click', (e) => {
+		const x = e.clientX;
+		const y = e.clientY;
+
+		// リングエフェクト
+		const ring = document.createElement('div');
+		ring.className = 'click-ring';
+		ring.style.left = x + 'px';
+		ring.style.top = y + 'px';
+		container.appendChild(ring);
+
+		// パーティクル生成
+		const particleCount = 8;
+		for (let i = 0; i < particleCount; i++) {
+			const particle = document.createElement('div');
+			particle.className = 'click-particle';
+			const angle = (360 / particleCount) * i;
+			const distance = 30 + Math.random() * 40;
+			const rad = angle * (Math.PI / 180);
+			const tx = Math.cos(rad) * distance;
+			const ty = Math.sin(rad) * distance;
+			const color = colors[Math.floor(Math.random() * colors.length)];
+			const size = 8 + Math.random() * 10;
+
+			particle.style.left = x + 'px';
+			particle.style.top = y + 'px';
+			particle.style.width = size + 'px';
+			particle.style.height = size + 'px';
+			particle.style.backgroundColor = color;
+			particle.style.animation = 'none';
+			particle.offsetHeight; // reflow
+			particle.style.animation = `clickParticle 0.35s ease-out forwards`;
+			particle.style.setProperty('--tx', tx + 'px');
+			particle.style.setProperty('--ty', ty + 'px');
+
+			container.appendChild(particle);
+		}
+
+		// 一定時間後に要素を削除
+		setTimeout(() => {
+			ring.remove();
+			container.querySelectorAll('.click-particle').forEach(p => {
+				if (parseFloat(getComputedStyle(p).opacity) === 0) {
+					p.remove();
+				}
+			});
+		}, 400);
+	});
+});
+</script>
