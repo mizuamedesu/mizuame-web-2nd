@@ -26,7 +26,7 @@
   "K8sクラスターでゲームサーバーをオーケストレーション_20260113.pdf": {
     "name": "K8sクラスターでゲームサーバーをオーケストレーション_20260113",
     "filename": "K8sクラスターでゲームサーバーをオーケストレーション_20260113.pdf",
-    "numPages": 48,
+    "numPages": 14,
     "thumbnail": "/slides/thumbnails/K8sクラスターでゲームサーバーをオーケストレーション_20260113.png"
   },
   "OAuth2.0 PKCEを UEでまじめに扱う_20250314.pdf": {
@@ -40,6 +40,12 @@
     "filename": "Unreal.k8s 中間報告_20251015.pdf",
     "numPages": 29,
     "thumbnail": "/slides/thumbnails/Unreal.k8s 中間報告_20251015.png"
+  },
+  "UnrealEngine5におけるメモリスキャンと任意関数呼び出し_20260319.pdf": {
+    "name": "UnrealEngine5におけるメモリスキャンと任意関数呼び出し_20260319",
+    "filename": "UnrealEngine5におけるメモリスキャンと任意関数呼び出し_20260319.pdf",
+    "numPages": 20,
+    "thumbnail": "/slides/thumbnails/UnrealEngine5におけるメモリスキャンと任意関数呼び出し_20260319.png"
   },
   "アカウント周りの処理とかについて_20250315.pdf": {
     "name": "アカウント周りの処理とかについて_20250315",
