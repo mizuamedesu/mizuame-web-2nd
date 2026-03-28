@@ -4,10 +4,11 @@
   "version": "0.0.1",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "node scripts/generate-ogp-cache.mjs && astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "generate-thumbnails": "node scripts/generate-thumbnails.js"
+    "generate-thumbnails": "node scripts/generate-thumbnails.js",
+    "generate-ogp": "node scripts/generate-ogp-cache.mjs"
   },
   "dependencies": {
     "@astrojs/mdx": "^4.0.7",
