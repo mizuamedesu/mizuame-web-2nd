@@ -4,10 +4,11 @@
   "version": "0.0.1",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "node scripts/generate-ogp-cache.mjs && astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "generate-thumbnails": "node scripts/generate-thumbnails.js"
+    "generate-thumbnails": "node scripts/generate-thumbnails.js",
+    "generate-ogp": "node scripts/generate-ogp-cache.mjs"
   },
   "dependencies": {
     "@astrojs/mdx": "^4.0.7",
@@ -16,7 +17,7 @@
     "@pixiv/three-vrm": "^3.3.4",
     "@pixiv/three-vrm-animation": "^3.3.4",
     "astro": "^5.1.10",
-    "axios": "^1.13.2",
+    "axios": "^1.13.6",
     "crypto": "^1.0.1",
     "pdfjs-dist": "^5.3.93",
     "three": "^0.172.0"

@@ -255,8 +255,9 @@ const backUrl = lang === 'en' ? '/blog/en/' : '/blog/';
 
 				if (!lightbox || !lightboxImg || !closeBtn) return;
 
-				// 記事内の画像にクリックイベントを追加
+				// 記事内の画像にクリックイベントを追加（リンクカード内の画像は除外）
 				document.querySelectorAll('.prose img').forEach(function(img) {
+					if (img.closest('.link-card') || img.closest('.oembed-container')) return;
 					img.addEventListener('click', function() {
 						lightboxImg.src = img.src;
 						lightbox.classList.add('active');
@@ -313,6 +314,103 @@ const backUrl = lang === 'en' ? '/blog/en/' : '/blog/';
 						});
 					});
 				});
+			});
+		</script>
+
+		<!-- URL埋め込み・リンクカード (OGP/oEmbedはビルド時キャッシュから読み込み) -->
+		<script is:inline>
+			document.addEventListener('DOMContentLoaded', function () {
+				// ─── 単独リンクの検出 ───
+				var targets = [];
+				document.querySelectorAll('.prose p').forEach(function (p) {
+					if (p.children.length !== 1 || p.childNodes.length !== 1) return;
+					var a = p.children[0];
+					if (a.tagName !== 'A') return;
+					var href = a.href;
+					if (!href || !/^https?:\/\//.test(href)) return;
+					targets.push({ p: p, url: href });
+				});
+				if (targets.length === 0) return;
+
+				// ─── リンクカード描画 ───
+				function renderCard(p, url, data) {
+					var domain = (data && data.domain) || '';
+					try { if (!domain) domain = new URL(url).hostname; } catch {}
+					var favicon = (data && data.favicon) || 'https://www.google.com/s2/favicons?domain=' + domain + '&sz=32';
+
+					var card = document.createElement('a');
+					card.href = url;
+					card.target = '_blank';
+					card.rel = 'noopener noreferrer';
+					card.className = 'link-card';
+
+					var h = '';
+					if (data && data.image) {
+						h += '<div class="link-card-thumbnail"><img src="' + data.image + '" alt="" loading="lazy" /></div>';
+					}
+					h += '<div class="link-card-body">';
+					h += '<div class="link-card-title">' + esc(data && data.title ? data.title : url) + '</div>';
+					if (data && data.description) {
+						h += '<div class="link-card-desc">' + esc(data.description) + '</div>';
+					}
+					h += '<div class="link-card-meta">';
+					h += '<img src="' + favicon + '" alt="" />';
+					h += '<span>' + esc(data && data.siteName ? data.siteName : domain) + '</span>';
+					h += '</div></div>';
+					card.innerHTML = h;
+					p.replaceWith(card);
+				}
+
+				// ─── oEmbed 埋め込み描画 ───
+				function renderOembed(p, data) {
+					var container = document.createElement('div');
+					container.className = 'oembed-container';
+
+					if (data.oembedType === 'video' || data.oembedType === 'rich') {
+						var wrap = document.createElement('div');
+						wrap.className = 'oembed-video-wrap';
+						wrap.innerHTML = data.oembedHtml;
+						container.appendChild(wrap);
+					} else {
+						container.innerHTML = data.oembedHtml;
+					}
+
+					// innerHTML で挿入された <script> は実行されないので再挿入
+					container.querySelectorAll('script').forEach(function (old) {
+						var s = document.createElement('script');
+						if (old.src) {
+							if (document.querySelector('script[src="' + old.src + '"]')) { old.remove(); return; }
+							s.src = old.src;
+						} else {
+							s.textContent = old.textContent;
+						}
+						s.async = true;
+						old.replaceWith(s);
+					});
+
+					p.replaceWith(container);
+				}
+
+				function esc(str) {
+					var d = document.createElement('div');
+					d.textContent = str;
+					return d.innerHTML;
+				}
+
+				// ─── OGPキャッシュを読み込んで描画 ───
+				fetch('/ogp-cache.json')
+					.then(function (r) { return r.ok ? r.json() : {}; })
+					.catch(function () { return {}; })
+					.then(function (cache) {
+						targets.forEach(function (t) {
+							var data = cache[t.url];
+							if (data && data.oembedHtml) {
+								renderOembed(t.p, data);
+							} else {
+								renderCard(t.p, t.url, data || null);
+							}
+						});
+					});
 			});
 		</script>
 	</body>

@@ -1,5 +1,6 @@
 # build output
 dist/
+public/ogp-cache.json
 # generated types
 .astro/
 
