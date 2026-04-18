@@ -350,13 +350,22 @@ const banners = [
         </div>
         <div class="music-widget">
           <iframe
+            src="https://kiiteru-front.fasutotesuto.workers.dev/embed/mizuame?theme=light"
+            title="Kiiteru now playing widget"
+            width="420"
+            height="190"
+            loading="lazy"
+            scrolling="no"
+            class="music-widget-frame music-widget-frame-desktop"
+          ></iframe>
+          <iframe
             src="https://kiiteru-front.fasutotesuto.workers.dev/embed/mizuame?theme=light&compact=1&status=0"
             title="Kiiteru now playing widget"
             width="420"
             height="170"
             loading="lazy"
             scrolling="no"
-            class="music-widget-frame"
+            class="music-widget-frame music-widget-frame-mobile"
           ></iframe>
         </div>
       </section>
@@ -1607,6 +1616,10 @@ const banners = [
     background: transparent;
   }
 
+  .music-widget-frame-mobile {
+    display: none;
+  }
+
   .at {
     color: var(--blue);
     margin: 0 0.1em;
@@ -2009,6 +2022,14 @@ const banners = [
       width: 100%;
       max-width: 240px;
       height: 148px;
+    }
+
+    .music-widget-frame-desktop {
+      display: none;
+    }
+
+    .music-widget-frame-mobile {
+      display: block;
     }
   }
 
