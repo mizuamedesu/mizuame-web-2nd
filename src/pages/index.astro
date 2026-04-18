@@ -348,6 +348,17 @@ const banners = [
             <span class="link-arrow">→</span>
           </a>
         </div>
+        <div class="music-widget">
+          <iframe
+            src="https://kiiteru-front.fasutotesuto.workers.dev/embed/mizuame?theme=light"
+            title="Kiiteru now playing widget"
+            width="420"
+            height="180"
+            loading="lazy"
+            scrolling="no"
+            class="music-widget-frame"
+          ></iframe>
+        </div>
       </section>
 
       <!-- コンタクトセクション -->
@@ -367,17 +378,6 @@ const banners = [
           </p>
         </div>
       </section>
-
-      <div class="music-widget">
-        <iframe
-          src="https://kiiteru-front.fasutotesuto.workers.dev/embed/mizuame?theme=light"
-          title="Kiiteru now playing widget"
-          width="420"
-          height="180"
-          loading="lazy"
-          class="music-widget-frame"
-        ></iframe>
-      </div>
 
       <Banner banners={banners} />
     </main>
@@ -1595,12 +1595,13 @@ const banners = [
   }
 
   .music-widget {
-    padding: 0 0 2rem;
+    padding: 1.5rem 0 0;
     display: flex;
     justify-content: center;
   }
 
   .music-widget-frame {
+    display: block;
     border: 0;
     overflow: hidden;
     background: transparent;
