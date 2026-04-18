@@ -358,15 +358,23 @@ const banners = [
             scrolling="no"
             class="music-widget-frame music-widget-frame-desktop"
           ></iframe>
-          <iframe
-            src="https://kiiteru-front.fasutotesuto.workers.dev/embed/mizuame?theme=light&compact=1&status=0"
-            title="Kiiteru now playing widget"
-            width="420"
-            height="170"
-            loading="lazy"
-            scrolling="no"
-            class="music-widget-frame music-widget-frame-mobile"
-          ></iframe>
+          <a
+            href="https://kiiteru-front.fasutotesuto.workers.dev/u/mizuame"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="music-widget-mobile-link"
+            aria-label="Open Kiiteru profile"
+          >
+            <iframe
+              src="https://kiiteru-front.fasutotesuto.workers.dev/embed/mizuame?theme=light&compact=1&status=0"
+              title="Kiiteru now playing widget"
+              width="420"
+              height="170"
+              loading="lazy"
+              scrolling="no"
+              class="music-widget-frame music-widget-frame-mobile"
+            ></iframe>
+          </a>
         </div>
       </section>
 
@@ -1620,6 +1628,10 @@ const banners = [
     display: none;
   }
 
+  .music-widget-mobile-link {
+    display: none;
+  }
+
   .at {
     color: var(--blue);
     margin: 0 0.1em;
@@ -2028,8 +2040,14 @@ const banners = [
       display: none;
     }
 
+    .music-widget-mobile-link {
+      display: block;
+      text-decoration: none;
+    }
+
     .music-widget-frame-mobile {
       display: block;
+      pointer-events: none;
     }
   }
 
