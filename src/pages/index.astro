@@ -368,6 +368,43 @@ const banners = [
         </div>
       </section>
 
+      <section class="music-widget" data-animate>
+        <div class="section-header">
+          <div class="section-label">
+            <span class="label-num">05</span>
+            <span class="label-text">NOW PLAYING</span>
+          </div>
+          <h2 class="section-title" data-split-text>Music</h2>
+        </div>
+
+        <div class="music-widget-card" data-scroll-in="scale">
+          <p class="music-widget-copy">
+            What I have been listening to lately.
+          </p>
+          <div class="music-widget-frame-wrap">
+            <iframe
+              src="https://kiiteru-front.fasutotesuto.workers.dev/embed/mizuame?theme=light"
+              title="Kiiteru now playing widget"
+              width="420"
+              height="180"
+              loading="lazy"
+              class="music-widget-frame"
+            ></iframe>
+          </div>
+          <div class="music-widget-actions">
+            <a
+              href="https://kiiteru-front.fasutotesuto.workers.dev/u/mizuame"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="music-widget-link"
+            >
+              <span>Open Kiiteru Profile</span>
+              <span class="music-widget-arrow">→</span>
+            </a>
+          </div>
+        </div>
+      </section>
+
       <Banner banners={banners} />
     </main>
     <Footer />
@@ -1583,6 +1620,92 @@ const banners = [
     margin: 0;
   }
 
+  .music-widget {
+    padding-bottom: 2rem;
+  }
+
+  .music-widget-card {
+    max-width: 560px;
+    margin: 0 auto;
+    padding: 2rem;
+    background:
+      radial-gradient(circle at top right, rgba(78, 205, 196, 0.16), transparent 30%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(247, 251, 255, 0.98));
+    border-radius: 24px;
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.08);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .music-widget-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 24px;
+    padding: 3px;
+    background: linear-gradient(135deg, var(--blue), #4ecdc4, transparent 75%);
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  .music-widget-copy {
+    margin: 0 0 1.25rem;
+    text-align: center;
+    font-size: 0.95rem;
+    color: #567;
+    letter-spacing: 0.04em;
+  }
+
+  .music-widget-frame-wrap {
+    display: flex;
+    justify-content: center;
+  }
+
+  .music-widget-frame {
+    width: 100%;
+    max-width: 420px;
+    border: 0;
+    border-radius: 18px;
+    overflow: hidden;
+    background: transparent;
+  }
+
+  .music-widget-actions {
+    margin-top: 1.25rem;
+    display: flex;
+    justify-content: center;
+  }
+
+  .music-widget-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.9rem 1.4rem;
+    border-radius: 999px;
+    background: var(--blue);
+    color: white;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 10px 25px rgba(95, 127, 255, 0.22);
+  }
+
+  .music-widget-link:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 30px rgba(95, 127, 255, 0.28);
+  }
+
+  .music-widget-arrow {
+    font-size: 1rem;
+    line-height: 1;
+  }
+
   .at {
     color: var(--blue);
     margin: 0 0.1em;
@@ -1976,6 +2099,35 @@ const banners = [
       font-size: 0.7rem;
       word-break: break-all;
     }
+
+    .music-widget {
+      padding-bottom: 1rem;
+    }
+
+    .music-widget-card {
+      width: 100%;
+      max-width: 320px;
+      padding: 1rem;
+      border-radius: 18px;
+      box-sizing: border-box;
+    }
+
+    .music-widget-copy {
+      margin-bottom: 0.9rem;
+      font-size: 0.8rem;
+    }
+
+    .music-widget-frame {
+      height: 180px;
+      max-width: 100%;
+    }
+
+    .music-widget-link {
+      width: 100%;
+      justify-content: center;
+      padding: 0.8rem 1rem;
+      font-size: 0.72rem;
+    }
   }
 
   /* さらに小さい画面 */
@@ -2094,6 +2246,11 @@ const banners = [
 
     .contact-email {
       font-size: 0.6rem;
+    }
+
+    .music-widget-card {
+      max-width: 280px;
+      padding: 0.85rem;
     }
   }
 </style>
