@@ -846,9 +846,9 @@ const banners = [
     letter-spacing: 0.3em;
     color: #888;
     margin-bottom: 1rem;
-    animation: slideIn 0.8s ease-out forwards;
+    animation: nameSubFadeIn 0.35s ease-out 0.1s forwards;
     opacity: 0;
-    transform: translateY(20px);
+    transform: none;
   }
 
   .name-main {
@@ -924,10 +924,9 @@ const banners = [
     }
   }
 
-  @keyframes slideIn {
+  @keyframes nameSubFadeIn {
     to {
       opacity: 1;
-      transform: translateY(0);
     }
   }
 
