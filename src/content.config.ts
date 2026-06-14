@@ -19,4 +19,15 @@ const blog = defineCollection({
 	}),
 });
 
-export const collections = { blog };
+const profile = defineCollection({
+	loader: glob({ base: './src/content/profile', pattern: '**/*.{md,mdx}' }),
+	schema: z.object({
+		title: z.string(),
+		description: z.string(),
+		createdDate: z.coerce.date().optional(),
+		updatedDate: z.coerce.date().optional(),
+		heroImage: z.string().optional(),
+	}),
+});
+
+export const collections = { blog, profile };
