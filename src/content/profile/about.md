@@ -64,7 +64,7 @@ https://www.wantedly.com/id/ryo_sato_desu
 ## その他所属
 
 * 日本ゲームシナリオライター協会(JAGSA) https://jagsa.jp/
-* IPA 独立行政法人 情報処理推進機構 産業サイバーセキュリティセンターサイバー技術研究室
+* IPA 独立行政法人 情報処理推進機構 産業サイバーセキュリティセンターサイバー技術研究室 https://www.ipa.go.jp/icscoe/index.html
 
 ## 資格等
 
