@@ -410,6 +410,86 @@ const banners = [
     </div>
 
     <script>
+      const shouldLockIntroScroll = !window.location.hash && window.scrollY < 4;
+      let isIntroScrollLocked = shouldLockIntroScroll;
+      let introScrollFrame = 0;
+      let introScrollFallback = 0;
+      const scrollBlockKeys = new Set([
+        " ",
+        "ArrowDown",
+        "ArrowUp",
+        "End",
+        "Home",
+        "PageDown",
+        "PageUp",
+      ]);
+      const introScrollOptions = { passive: false, capture: true };
+
+      const keepIntroScrollAtTop = () => {
+        if (!isIntroScrollLocked) {
+          return;
+        }
+        if (window.scrollX !== 0 || window.scrollY !== 0) {
+          window.scrollTo(0, 0);
+        }
+        introScrollFrame = requestAnimationFrame(keepIntroScrollAtTop);
+      };
+
+      const preventIntroScroll = (event: Event) => {
+        if (isIntroScrollLocked) {
+          event.preventDefault();
+        }
+      };
+
+      const preventIntroKeyScroll = (event: KeyboardEvent) => {
+        if (isIntroScrollLocked && scrollBlockKeys.has(event.key)) {
+          event.preventDefault();
+        }
+      };
+
+      const releaseIntroScroll = () => {
+        if (!isIntroScrollLocked) {
+          return;
+        }
+        isIntroScrollLocked = false;
+        cancelAnimationFrame(introScrollFrame);
+        window.clearTimeout(introScrollFallback);
+        window.removeEventListener("wheel", preventIntroScroll, introScrollOptions);
+        window.removeEventListener(
+          "touchmove",
+          preventIntroScroll,
+          introScrollOptions,
+        );
+        window.removeEventListener(
+          "keydown",
+          preventIntroKeyScroll,
+          introScrollOptions,
+        );
+        if (window.scrollX !== 0 || window.scrollY !== 0) {
+          window.scrollTo(0, 0);
+        }
+        updateOnScroll();
+      };
+
+      if (shouldLockIntroScroll) {
+        if ("scrollRestoration" in history) {
+          history.scrollRestoration = "manual";
+        }
+        window.addEventListener("wheel", preventIntroScroll, introScrollOptions);
+        window.addEventListener(
+          "touchmove",
+          preventIntroScroll,
+          introScrollOptions,
+        );
+        window.addEventListener(
+          "keydown",
+          preventIntroKeyScroll,
+          introScrollOptions,
+        );
+        keepIntroScrollAtTop();
+        introScrollFallback = window.setTimeout(releaseIntroScroll, 1500);
+      }
+
       const cameraLayers = document.querySelectorAll(
         ".camera-animated, .camera-focus",
       );
@@ -425,6 +505,9 @@ const banners = [
               return;
             }
             layer.classList.add("camera-animation-complete");
+            if (layer.classList.contains("camera-animated")) {
+              releaseIntroScroll();
+            }
           },
         );
       });
@@ -502,7 +585,7 @@ const banners = [
       let ticking = false;
 
       function updateOnScroll() {
-        const scrollY = window.scrollY;
+        const scrollY = isIntroScrollLocked ? 0 : window.scrollY;
         const windowHeight = window.innerHeight;
         const documentHeight = document.documentElement.scrollHeight;
         const scrollPercent = scrollY / (documentHeight - windowHeight);
@@ -654,6 +737,7 @@ const banners = [
 
   html {
     overflow-x: hidden;
+    overflow-anchor: none;
   }
 
   body {
@@ -664,10 +748,11 @@ const banners = [
     position: relative;
     width: 100%;
     max-width: 100vw;
+    overflow-anchor: none;
   }
 
   .camera-animated {
-    transform-origin: 50% 42vh;
+    transform-origin: 50% 50vh;
     animation:
       cameraZoomIn 1.25s cubic-bezier(0.12, 0.82, 0.18, 1) both,
       cameraFocusShift 1.25s linear both;
@@ -754,10 +839,10 @@ const banners = [
   @keyframes cameraZoomIn {
     0%,
     8% {
-      transform: scale(0.68);
+      transform: translate3d(0, 0, 0) scale(0.68);
     }
     100% {
-      transform: none;
+      transform: translate3d(0, 0, 0) scale(1);
     }
   }
 
@@ -1032,7 +1117,7 @@ const banners = [
     font-weight: 900;
     color: rgba(0, 0, 0, 0.03);
     letter-spacing: 0.05em;
-    transform: rotate(-5deg);
+    transform: translateY(0);
     user-select: none;
     will-change: transform;
   }
