@@ -1048,6 +1048,7 @@ const banners = [
   .name-container {
     position: relative;
     margin-bottom: 3rem;
+    z-index: 3;
   }
 
   .name-sub {
@@ -1178,6 +1179,8 @@ const banners = [
 
   .tagline-wrapper {
     margin-bottom: 2rem;
+    position: relative;
+    z-index: 2;
   }
 
   .tagline-box {
@@ -1221,6 +1224,7 @@ const banners = [
     top: 0;
     left: 0;
     pointer-events: none;
+    z-index: 1;
   }
 
   .float-item {
@@ -1256,19 +1260,19 @@ const banners = [
   .float-1 {
     top: 10%;
     left: 15%;
-    --line-delay: 0.25s;
+    --line-delay: 0.5s;
   }
 
   .float-2 {
     top: 20%;
     right: 10%;
-    --line-delay: 0.4s;
+    --line-delay: 0.65s;
   }
 
   .float-3 {
     bottom: 20%;
     left: 10%;
-    --line-delay: 0.55s;
+    --line-delay: 0.8s;
   }
 
   .scroll-hint {
