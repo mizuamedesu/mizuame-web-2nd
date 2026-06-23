@@ -81,7 +81,7 @@ const { articleSlug, title = "" } = Astro.props;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     border-radius: 12px;
     padding: 1.5rem;
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 5px 14px rgba(102, 126, 234, 0.42);
     color: white;
     border: 1px solid rgba(255, 255, 255, 0.1);
   }
@@ -135,7 +135,7 @@ const { articleSlug, title = "" } = Astro.props;
   @media (prefers-color-scheme: dark) {
     .audio-player {
       background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
-      box-shadow: 0 8px 25px rgba(45, 55, 72, 0.4);
+      box-shadow: 0 5px 14px rgba(45, 55, 72, 0.55);
     }
   }
   
@@ -156,13 +156,13 @@ const { articleSlug, title = "" } = Astro.props;
   
   .audio-player:hover {
     transform: translateY(-2px);
-    box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 7px 18px rgba(102, 126, 234, 0.52);
     transition: all 0.3s ease;
   }
   
   @media (prefers-color-scheme: dark) {
     .audio-player:hover {
-      box-shadow: 0 12px 35px rgba(45, 55, 72, 0.6);
+      box-shadow: 0 7px 18px rgba(45, 55, 72, 0.68);
     }
   }
 </style>

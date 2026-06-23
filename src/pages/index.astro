@@ -186,7 +186,7 @@ const banners = [
             <div class="float-item float-1" data-parallax data-speed="0.2">
               CODE
             </div>
-            <div class="float-item float-2" data-parallax data-speed="-0.15">
+            <div class="float-item float-2">
               DESIGN
             </div>
             <div class="float-item float-3" data-parallax data-speed="0.25">
@@ -196,8 +196,7 @@ const banners = [
         </div>
 
         <div class="scroll-hint">
-          <span>SCROLL</span>
-          <div class="scroll-line"></div>
+          <span class="scroll-arrow" aria-hidden="true">↓</span>
         </div>
       </section>
 
@@ -988,7 +987,7 @@ const banners = [
     background: white;
     padding: 1rem 2rem;
     border-radius: 100px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 5px 16px rgba(0, 0, 0, 0.18);
     transform: rotate(-2deg);
     animation: slideUp 0.8s ease-out 0.8s forwards;
     opacity: 0;
@@ -1061,37 +1060,15 @@ const banners = [
     position: absolute;
     bottom: 2rem;
     display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: 0.5rem;
-    animation: fadeIn 1s ease-out 2s forwards;
-    opacity: 0;
+    justify-content: center;
   }
 
-  .scroll-hint span {
-    font-size: 0.625rem;
+  .scroll-arrow {
+    font-size: 1.75rem;
     font-weight: 700;
-    letter-spacing: 0.3em;
+    line-height: 1;
     color: var(--blue);
-  }
-
-  .scroll-line {
-    width: 2px;
-    height: 40px;
-    background: linear-gradient(to bottom, var(--blue), transparent);
-    animation: scrollPulse 1.5s ease-in-out infinite;
-  }
-
-  @keyframes scrollPulse {
-    0%,
-    100% {
-      transform: scaleY(1);
-      opacity: 1;
-    }
-    50% {
-      transform: scaleY(0.5);
-      opacity: 0.5;
-    }
   }
 
   /* マーキーセクション */
@@ -1260,7 +1237,7 @@ const banners = [
     background: white;
     padding: 2rem;
     border-radius: 16px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.14);
     text-align: center;
     position: relative;
     overflow: hidden;
@@ -1374,7 +1351,7 @@ const banners = [
     background: white;
     border-radius: 16px;
     overflow: hidden;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 5px 16px rgba(0, 0, 0, 0.16);
     transition: all 0.3s ease;
     position: relative;
   }
@@ -1511,7 +1488,7 @@ const banners = [
     padding: 1.5rem 2rem;
     background: white;
     border-radius: 16px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 5px 16px rgba(0, 0, 0, 0.16);
     text-decoration: none;
     color: #2d3436;
     font-weight: 700;
@@ -1573,7 +1550,7 @@ const banners = [
     background: white;
     padding: 2rem 3rem;
     border-radius: 16px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 5px 16px rgba(0, 0, 0, 0.16);
     transform: rotate(-1deg);
     position: relative;
     transition: all 0.3s ease;
@@ -1736,12 +1713,8 @@ const banners = [
       margin-top: 2rem;
     }
 
-    .scroll-hint span {
-      font-size: 0.5rem;
-    }
-
-    .scroll-line {
-      height: 30px;
+    .scroll-arrow {
+      font-size: 1.5rem;
     }
 
     .tagline-wrapper {
@@ -2113,8 +2086,8 @@ const banners = [
       margin-top: 1.5rem;
     }
 
-    .scroll-line {
-      height: 25px;
+    .scroll-arrow {
+      font-size: 1.35rem;
     }
 
     /* 装飾要素（さらに小さく） */

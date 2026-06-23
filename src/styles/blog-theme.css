@@ -11,7 +11,7 @@
 	--blog-code-bg: rgb(229, 233, 240);
 	--blog-link: #2337ff;
 	--blog-link-hover: #000d8a;
-	--blog-shadow: 0 2px 6px rgba(96, 115, 159, 0.25), 0 8px 24px rgba(96, 115, 159, 0.33);
+	--blog-shadow: 0 2px 4px rgba(96, 115, 159, 0.34), 0 6px 14px rgba(96, 115, 159, 0.44);
 }
 
 /* ダークモード */
@@ -25,7 +25,7 @@
 	--blog-code-bg: #27273a;
 	--blog-link: #6b7bff;
 	--blog-link-hover: #8b9aff;
-	--blog-shadow: 0 2px 6px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.5);
+	--blog-shadow: 0 2px 4px rgba(0, 0, 0, 0.5), 0 6px 14px rgba(0, 0, 0, 0.62);
 }
 
 /* ブログページ共通スタイル - !important で既存スタイルを上書き */

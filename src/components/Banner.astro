@@ -28,6 +28,7 @@ const { banners } = Astro.props;
           <a
             href={banner.href}
             class="banner-link"
+            data-banner-link
             title={banner.title || banner.alt}
             target="_blank"
             rel="noopener noreferrer"
@@ -102,13 +103,16 @@ const { banners } = Astro.props;
     background: white;
     padding: 0.75rem;
     border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.16);
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     opacity: 0;
     transform: translateY(20px);
+    position: relative;
+  }
+
+  .banner-link.visible {
     animation: bannerIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     animation-delay: var(--delay, 0s);
-    position: relative;
   }
 
   @keyframes bannerIn {
@@ -220,3 +224,32 @@ const { banners } = Astro.props;
     }
   }
 </style>
+
+<script>
+  const bannerLinks = document.querySelectorAll("[data-banner-link]");
+
+  const showBanner = (link: Element) => {
+    link.classList.add("visible");
+  };
+
+  if ("IntersectionObserver" in window) {
+    const bannerObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            showBanner(entry.target);
+            bannerObserver.unobserve(entry.target);
+          }
+        });
+      },
+      {
+        threshold: 0.2,
+        rootMargin: "0px 0px -80px 0px",
+      },
+    );
+
+    bannerLinks.forEach((link) => bannerObserver.observe(link));
+  } else {
+    bannerLinks.forEach(showBanner);
+  }
+</script>
