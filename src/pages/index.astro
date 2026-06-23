@@ -72,21 +72,21 @@ const banners = [
     <!-- プログレスバー -->
     <div class="progress-bar"></div>
 
-    <!-- 装飾要素 -->
-    <div class="deco deco-circle-1" data-parallax data-speed="0.3"></div>
-    <div class="deco deco-circle-2" data-parallax data-speed="-0.2"></div>
-    <div class="deco deco-circle-3" data-parallax data-speed="0.15"></div>
-    <div class="deco deco-cross-1" data-parallax data-speed="0.4">+</div>
-    <div class="deco deco-cross-2" data-parallax data-speed="-0.3">+</div>
-    <div class="deco deco-cross-3" data-parallax data-speed="0.25">x</div>
+    <div class="camera-backdrop camera-animated">
+      <div class="deco deco-circle-1" data-parallax data-speed="0.3"></div>
+      <div class="deco deco-circle-2" data-parallax data-speed="-0.2"></div>
+      <div class="deco deco-circle-3" data-parallax data-speed="0.15"></div>
+      <div class="deco deco-cross-1" data-parallax data-speed="0.4">+</div>
+      <div class="deco deco-cross-2" data-parallax data-speed="-0.3">+</div>
+      <div class="deco deco-cross-3" data-parallax data-speed="0.25">x</div>
+      <div class="dots-container dots-1" data-parallax data-speed="0.1"></div>
+      <div class="dots-container dots-2" data-parallax data-speed="-0.15"></div>
+      <div class="dots-container dots-3" data-parallax data-speed="0.2"></div>
+      <div class="dots-container dots-4" data-parallax data-speed="-0.1"></div>
+    </div>
 
-    <!-- ドットパターン -->
-    <div class="dots-container dots-1" data-parallax data-speed="0.1"></div>
-    <div class="dots-container dots-2" data-parallax data-speed="-0.15"></div>
-    <div class="dots-container dots-3" data-parallax data-speed="0.2"></div>
-    <div class="dots-container dots-4" data-parallax data-speed="-0.1"></div>
-
-    <main>
+    <div class="camera-stage camera-animated">
+      <main>
       <!-- ヒーローセクション -->
       <section class="hero">
         <div class="hero-bg-text" data-parallax data-speed="-0.5">
@@ -404,10 +404,22 @@ const banners = [
       </section>
 
       <Banner banners={banners} />
-    </main>
-    <Footer />
+      </main>
+      <Footer />
+    </div>
 
     <script>
+      const cameraLayers = document.querySelectorAll(".camera-animated");
+      cameraLayers.forEach((layer) => {
+        layer.addEventListener(
+          "animationend",
+          () => {
+            layer.classList.add("camera-animation-complete");
+          },
+          { once: true },
+        );
+      });
+
       // プログレスバー
       const progressBar = document.querySelector(
         ".progress-bar",
@@ -641,6 +653,70 @@ const banners = [
     max-width: 100vw;
   }
 
+  .camera-animated {
+    transform-origin: 50% 42vh;
+    animation:
+      cameraZoomIn 1.25s cubic-bezier(0.12, 0.82, 0.18, 1) both,
+      cameraFocusShift 1.25s linear both;
+    will-change: transform, filter;
+  }
+
+  .camera-animation-complete {
+    animation: none;
+    transform: none;
+    filter: blur(0px);
+    will-change: auto;
+  }
+
+  .camera-backdrop {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+
+  .camera-backdrop .deco,
+  .camera-backdrop .dots-container {
+    position: absolute;
+  }
+
+  .camera-stage {
+    position: relative;
+    z-index: 1;
+  }
+
+  @keyframes cameraZoomIn {
+    0%,
+    8% {
+      transform: scale(0.68) translateY(6vh);
+    }
+    100% {
+      transform: none;
+    }
+  }
+
+  @keyframes cameraFocusShift {
+    0%,
+    10% {
+      filter: blur(0px);
+    }
+    28% {
+      filter: blur(8px);
+    }
+    100% {
+      filter: blur(0px);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .camera-animated {
+      animation: none;
+      transform: none;
+      filter: blur(0px);
+    }
+  }
+
   /* 紙のようなノイズテクスチャ */
   body::before {
     content: "";
@@ -851,8 +927,6 @@ const banners = [
     letter-spacing: 0.3em;
     color: #888;
     margin-bottom: 1rem;
-    animation: nameSubFadeIn 0.35s ease-out 0.1s forwards;
-    opacity: 0;
     transform: none;
   }
 
@@ -925,12 +999,6 @@ const banners = [
       opacity: 0;
     }
     100% {
-      opacity: 1;
-    }
-  }
-
-  @keyframes nameSubFadeIn {
-    to {
       opacity: 1;
     }
   }
