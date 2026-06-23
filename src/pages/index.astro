@@ -72,17 +72,17 @@ const banners = [
     <!-- プログレスバー -->
     <div class="progress-bar"></div>
 
-    <div class="camera-backdrop camera-animated">
-      <div class="deco deco-circle-1" data-parallax data-speed="0.3"></div>
-      <div class="deco deco-circle-2" data-parallax data-speed="-0.2"></div>
-      <div class="deco deco-circle-3" data-parallax data-speed="0.15"></div>
-      <div class="deco deco-cross-1" data-parallax data-speed="0.4">+</div>
-      <div class="deco deco-cross-2" data-parallax data-speed="-0.3">+</div>
-      <div class="deco deco-cross-3" data-parallax data-speed="0.25">x</div>
-      <div class="dots-container dots-1" data-parallax data-speed="0.1"></div>
-      <div class="dots-container dots-2" data-parallax data-speed="-0.15"></div>
-      <div class="dots-container dots-3" data-parallax data-speed="0.2"></div>
-      <div class="dots-container dots-4" data-parallax data-speed="-0.1"></div>
+    <div class="camera-backdrop camera-focus">
+      <div class="deco deco-circle-1 depth-near" data-parallax data-speed="0.3"></div>
+      <div class="deco deco-circle-2 depth-mid" data-parallax data-speed="-0.2"></div>
+      <div class="deco deco-circle-3 depth-far" data-parallax data-speed="0.15"></div>
+      <div class="deco deco-cross-1 depth-near" data-parallax data-speed="0.4">+</div>
+      <div class="deco deco-cross-2 depth-mid" data-parallax data-speed="-0.3">+</div>
+      <div class="deco deco-cross-3 depth-far" data-parallax data-speed="0.25">x</div>
+      <div class="dots-container dots-1 depth-far" data-parallax data-speed="0.1"></div>
+      <div class="dots-container dots-2 depth-mid" data-parallax data-speed="-0.15"></div>
+      <div class="dots-container dots-3 depth-near" data-parallax data-speed="0.2"></div>
+      <div class="dots-container dots-4 depth-mid" data-parallax data-speed="-0.1"></div>
     </div>
 
     <div class="camera-stage camera-animated">
@@ -409,7 +409,9 @@ const banners = [
     </div>
 
     <script>
-      const cameraLayers = document.querySelectorAll(".camera-animated");
+      const cameraLayers = document.querySelectorAll(
+        ".camera-animated, .camera-focus",
+      );
       cameraLayers.forEach((layer) => {
         layer.addEventListener(
           "animationend",
@@ -508,7 +510,11 @@ const banners = [
           const element = el as HTMLElement;
           const speed = parseFloat(element.dataset.speed || "0");
           const yPos = scrollY * speed;
-          element.style.transform = `translateY(${yPos}px)`;
+          if (element.closest(".camera-backdrop")) {
+            element.style.setProperty("--parallax-y", `${yPos}px`);
+          } else {
+            element.style.transform = `translateY(${yPos}px)`;
+          }
         });
 
         // 水平スクロールテキスト
@@ -661,6 +667,11 @@ const banners = [
     will-change: transform, filter;
   }
 
+  .camera-focus {
+    animation: cameraFocusShift 1.25s linear both;
+    will-change: filter;
+  }
+
   .camera-animation-complete {
     animation: none;
     transform: none;
@@ -679,6 +690,21 @@ const banners = [
   .camera-backdrop .deco,
   .camera-backdrop .dots-container {
     position: absolute;
+    --parallax-y: 0px;
+    --intro-x: 0vw;
+    --intro-y: 0vh;
+    --intro-scale: 0.7;
+    transform: translate3d(0, var(--parallax-y), 0);
+    animation: cameraDepthIn 1.25s cubic-bezier(0.12, 0.82, 0.18, 1) both;
+    transform-origin: center;
+    will-change: transform;
+  }
+
+  .camera-backdrop.camera-animation-complete .deco,
+  .camera-backdrop.camera-animation-complete .dots-container {
+    animation: none;
+    transform: translate3d(0, var(--parallax-y), 0);
+    will-change: transform;
   }
 
   .camera-stage {
@@ -689,19 +715,33 @@ const banners = [
   @keyframes cameraZoomIn {
     0%,
     8% {
-      transform: scale(0.68) translateY(6vh);
+      transform: scale(0.68);
     }
     100% {
       transform: none;
     }
   }
 
-  @keyframes cameraFocusShift {
+  @keyframes cameraDepthIn {
     0%,
-    10% {
+    8% {
+      transform: translate3d(
+          var(--intro-x),
+          calc(var(--intro-y) + var(--parallax-y)),
+          0
+        )
+        scale(var(--intro-scale));
+    }
+    100% {
+      transform: translate3d(0, var(--parallax-y), 0) scale(1);
+    }
+  }
+
+  @keyframes cameraFocusShift {
+    0% {
       filter: blur(0px);
     }
-    28% {
+    18% {
       filter: blur(8px);
     }
     100% {
@@ -713,6 +753,13 @@ const banners = [
     .camera-animated {
       animation: none;
       transform: none;
+      filter: blur(0px);
+    }
+
+    .camera-focus,
+    .camera-backdrop .deco,
+    .camera-backdrop .dots-container {
+      animation: none;
       filter: blur(0px);
     }
   }
@@ -762,6 +809,9 @@ const banners = [
     opacity: 0.1;
     top: -100px;
     right: -100px;
+    --intro-x: -22vw;
+    --intro-y: 16vh;
+    --intro-scale: 0.42;
   }
 
   .deco-circle-2 {
@@ -772,6 +822,9 @@ const banners = [
     opacity: 0.1;
     top: 50%;
     left: -80px;
+    --intro-x: 15vw;
+    --intro-y: -2vh;
+    --intro-scale: 0.62;
   }
 
   .deco-circle-3 {
@@ -782,6 +835,9 @@ const banners = [
     opacity: 0.2;
     top: 30%;
     right: 5%;
+    --intro-x: -6vw;
+    --intro-y: 4vh;
+    --intro-scale: 0.86;
   }
 
   .deco-cross-1,
@@ -796,12 +852,18 @@ const banners = [
     left: 10%;
     color: var(--blue);
     opacity: 0.3;
+    --intro-x: 18vw;
+    --intro-y: 16vh;
+    --intro-scale: 0.48;
   }
   .deco-cross-2 {
     top: 40%;
     right: 15%;
     color: var(--blue);
     opacity: 0.3;
+    --intro-x: -13vw;
+    --intro-y: 1vh;
+    --intro-scale: 0.66;
   }
   .deco-cross-3 {
     top: 70%;
@@ -809,6 +871,9 @@ const banners = [
     color: var(--blue);
     font-size: 1.5rem;
     opacity: 0.3;
+    --intro-x: 7vw;
+    --intro-y: -10vh;
+    --intro-scale: 0.84;
   }
 
   /* ドットパターン */
@@ -835,6 +900,9 @@ const banners = [
     right: 20%;
     opacity: 0.15;
     animation: dotsFloat 8s ease-in-out infinite;
+    --intro-x: -4vw;
+    --intro-y: 5vh;
+    --intro-scale: 0.88;
   }
 
   .dots-2 {
@@ -844,6 +912,9 @@ const banners = [
     left: 8%;
     opacity: 0.12;
     animation: dotsFloat 10s ease-in-out infinite reverse;
+    --intro-x: 13vw;
+    --intro-y: 0vh;
+    --intro-scale: 0.64;
   }
 
   .dots-3 {
@@ -854,6 +925,9 @@ const banners = [
     opacity: 0.1;
     animation: dotsFloat 12s ease-in-out infinite;
     animation-delay: -3s;
+    --intro-x: -19vw;
+    --intro-y: -14vh;
+    --intro-scale: 0.45;
   }
 
   .dots-4 {
@@ -864,6 +938,9 @@ const banners = [
     opacity: 0.15;
     animation: dotsFloat 9s ease-in-out infinite reverse;
     animation-delay: -5s;
+    --intro-x: 6vw;
+    --intro-y: -12vh;
+    --intro-scale: 0.68;
   }
 
   @keyframes dotsFloat {
