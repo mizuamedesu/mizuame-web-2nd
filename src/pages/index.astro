@@ -1228,30 +1228,47 @@ const banners = [
     font-size: 0.75rem;
     font-weight: 900;
     letter-spacing: 0.1em;
-    padding: 0.5em 1em;
-    border-radius: 4px;
+    color: #2d3436;
+    padding: 0.25em 0 0.45em;
     will-change: transform;
+  }
+
+  .float-item::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0.15em;
+    height: 2px;
+    background: #2d3436;
+    transform: scaleX(0);
+    transform-origin: left;
+    animation: floatUnderlineDraw 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation-delay: var(--line-delay, 0.3s);
+  }
+
+  @keyframes floatUnderlineDraw {
+    to {
+      transform: scaleX(1);
+    }
   }
 
   .float-1 {
     top: 10%;
     left: 15%;
-    background: rgba(78, 205, 196, 0.15);
-    color: var(--blue);
+    --line-delay: 0.25s;
   }
 
   .float-2 {
     top: 20%;
     right: 10%;
-    background: rgba(78, 205, 196, 0.15);
-    color: var(--blue);
+    --line-delay: 0.4s;
   }
 
   .float-3 {
     bottom: 20%;
     left: 10%;
-    background: rgba(78, 205, 196, 0.15);
-    color: var(--blue);
+    --line-delay: 0.55s;
   }
 
   .scroll-hint {
@@ -1911,7 +1928,7 @@ const banners = [
       right: auto;
       bottom: auto;
       font-size: 0.6rem;
-      padding: 0.4em 0.8em;
+      padding: 0.25em 0 0.45em;
     }
 
     .scroll-hint {
@@ -2286,7 +2303,7 @@ const banners = [
 
     .float-item {
       font-size: 0.5rem;
-      padding: 0.3em 0.6em;
+      padding: 0.2em 0 0.4em;
     }
 
     .scroll-hint {
