@@ -416,10 +416,16 @@ const banners = [
       cameraLayers.forEach((layer) => {
         layer.addEventListener(
           "animationend",
-          () => {
+          (event) => {
+            const animation = event as AnimationEvent;
+            if (
+              animation.target !== layer ||
+              animation.animationName !== "cameraFocusShift"
+            ) {
+              return;
+            }
             layer.classList.add("camera-animation-complete");
           },
-          { once: true },
         );
       });
 
@@ -674,9 +680,6 @@ const banners = [
   }
 
   .camera-animation-complete {
-    animation: none;
-    transform: none;
-    filter: blur(0px);
     will-change: auto;
   }
 
@@ -717,8 +720,6 @@ const banners = [
 
   .camera-backdrop.camera-animation-complete .deco,
   .camera-backdrop.camera-animation-complete .dots-container {
-    animation: none;
-    transform: translate3d(0, var(--parallax-y), 0);
     will-change: transform, filter;
   }
 
