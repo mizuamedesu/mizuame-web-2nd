@@ -90,12 +90,12 @@ const banners = [
       <main>
       <!-- ヒーローセクション -->
       <section class="hero">
-        <div class="hero-bg-text" data-parallax data-speed="-0.5">
+        <div class="hero-bg-text">
           PORTFOLIO
         </div>
         <div class="hero-content" data-scale-out>
           <div class="name-container">
-            <span class="name-sub">SOFTWARE ENGINEER</span>
+            <span class="name-sub">Multi Domain Computer Otaku</span>
             <h1 class="name-main">
               <span class="char-wrapper" style="--i:0; --r:-5deg">
                 <svg class="char-svg" viewBox="0 0 100 100">
@@ -601,6 +601,8 @@ const banners = [
           const speed = parseFloat(element.dataset.speed || "0");
           const yPos = scrollY * speed;
           if (element.closest(".camera-backdrop")) {
+            element.style.setProperty("--parallax-y", `${yPos}px`);
+          } else if (element.classList.contains("hero-bg-text")) {
             element.style.setProperty("--parallax-y", `${yPos}px`);
           } else {
             element.style.transform = `translateY(${yPos}px)`;
@@ -1123,13 +1125,13 @@ const banners = [
     font-weight: 900;
     color: rgba(0, 0, 0, 0.03);
     letter-spacing: 0.05em;
-    transform: translateY(0);
+    transform: none;
     white-space: nowrap;
     clip-path: inset(0 100% 0 0);
     -webkit-clip-path: inset(0 100% 0 0);
     animation: portfolioTypeIn 0.9s steps(9, end) 0.1s forwards;
     user-select: none;
-    will-change: transform, clip-path;
+    will-change: clip-path;
   }
 
   @keyframes portfolioTypeIn {
