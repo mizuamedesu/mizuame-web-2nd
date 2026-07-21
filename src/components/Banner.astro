@@ -16,10 +16,6 @@ const { banners } = Astro.props;
 
 {banners && banners.length > 0 && (
   <section class="banner-section" data-animate>
-    <div class="banner-header">
-      <span class="banner-label">05</span>
-      <span class="banner-label-text">LINKS</span>
-    </div>
     <h3 class="banner-title">バナー</h3>
     <p class="banner-subtitle">相互リンク募集中</p>
     <div class="banner-grid">
@@ -52,35 +48,26 @@ const { banners } = Astro.props;
     padding: 4rem 0;
   }
 
-  .banner-header {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 1rem;
-  }
-
-  .banner-label {
-    font-size: 0.75rem;
-    font-weight: 900;
-    color: white;
-    background: #4ECDC4;
-    padding: 0.25em 0.5em;
-    border-radius: 4px;
-  }
-
-  .banner-label-text {
-    font-size: 0.75rem;
-    font-weight: 700;
-    letter-spacing: 0.2em;
-    color: #4ECDC4;
-  }
-
   .banner-title {
+    position: relative;
+    z-index: 0;
     font-size: clamp(2rem, 8vw, 3rem);
     font-weight: 900;
+    line-height: 1.15;
+    letter-spacing: -0.08em;
     margin: 0 0 0.5rem;
     display: inline-block;
-    transform: rotate(-2deg);
+  }
+
+  .banner-title::after {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    left: 0;
+    bottom: 0.02em;
+    width: 100%;
+    height: 0.22em;
+    background: #4ECDC4;
   }
 
   .banner-subtitle {
@@ -163,20 +150,8 @@ const { banners } = Astro.props;
       text-align: center;
     }
 
-    .banner-header {
-      gap: 0.5rem;
-      margin-bottom: 0.5rem;
-      justify-content: center;
-    }
-
-    .banner-label,
-    .banner-label-text {
-      font-size: 0.6rem;
-    }
-
     .banner-title {
       font-size: 1.75rem;
-      transform: rotate(0deg);
     }
 
     .banner-subtitle {
