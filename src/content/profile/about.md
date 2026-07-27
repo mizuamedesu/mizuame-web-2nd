@@ -73,6 +73,10 @@ ref https://mizuame.works/blog/2024-06-17/
 
 ## 登壇/LT
 
+* インディーゲーム開発者が見る世界
+@筑波/SFCコラボLT
+https://mizuame.works/slides/%E3%82%A4%E3%83%B3%E3%83%87%E3%82%A3%E3%83%BC%E3%82%B2%E3%83%BC%E3%83%A0%E9%96%8B%E7%99%BA%E8%80%85%E3%81%8C%E8%A6%8B%E3%82%8B%E4%B8%96%E7%95%8C_20260614/
+
 * LLMを社畜労働させる
 @UNTIL. LT #0x0A
 https://mizuame.works/slides/LLM%E3%82%92%E7%A4%BE%E7%95%9C%E5%8A%B4%E5%83%8D%E3%81%95%E3%81%9B%E3%82%8B_20260419/
