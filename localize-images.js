@@ -27,12 +27,15 @@ async function downloadImage(url, filepath) {
     const writer = createWriteStream(filepath);
     response.data.pipe(writer);
 
-    return new Promise((resolve, reject) => {
+    await new Promise((resolve, reject) => {
       writer.on('finish', resolve);
       writer.on('error', reject);
+      response.data.on('error', reject);
     });
   } catch (error) {
     console.error(`Failed to download ${url}:`, error.message);
+    // 途中まで書き込まれたファイルは次回の存在チェックを誤らせるので消す
+    await fs.rm(filepath, { force: true });
     throw error;
   }
 }
@@ -122,16 +125,31 @@ async function processMarkdownFile(filePath) {
   }
 }
 
+// ロケールごとのサブディレクトリ（ja/en）も含めて再帰的に探索する
+async function findMarkdownFiles(dir) {
+  const entries = await fs.readdir(dir, { withFileTypes: true });
+  const found = [];
+
+  for (const entry of entries) {
+    const entryPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      found.push(...await findMarkdownFiles(entryPath));
+    } else if (entry.name.endsWith('.md')) {
+      found.push(entryPath);
+    }
+  }
+
+  return found;
+}
+
 async function processAllMarkdownFiles() {
   try {
-    const files = await fs.readdir(BLOG_DIR);
-    const markdownFiles = files.filter(file => file.endsWith('.md'));
-    
+    const markdownFiles = await findMarkdownFiles(BLOG_DIR);
+
     console.log(`Found ${markdownFiles.length} markdown files to process`);
-    
+
     let totalUpdated = 0;
-    for (const file of markdownFiles) {
-      const filePath = path.join(BLOG_DIR, file);
+    for (const filePath of markdownFiles) {
       const updated = await processMarkdownFile(filePath);
       if (updated) totalUpdated++;
     }

@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git log *)",
+      "Bash(git fetch *)",
+      "Bash(node localize-images.js)",
+      "Bash(file public/blog-content-img/2026-08-07/*)"
+    ]
+  }
+}
