@@ -67,7 +67,7 @@ const { banners } = Astro.props;
     bottom: 0.02em;
     width: 100%;
     height: 0.22em;
-    background: #4ECDC4;
+    background: var(--theme-color);
   }
 
   .banner-subtitle {
@@ -121,7 +121,7 @@ const { banners } = Astro.props;
     inset: 0;
     border-radius: 12px;
     padding: 3px;
-    background: conic-gradient(from -90deg, #4ECDC4 var(--border-angle), transparent var(--border-angle));
+    background: conic-gradient(from -90deg, var(--theme-color) var(--border-angle), transparent var(--border-angle));
     --border-angle: 0deg;
     transition: --border-angle 0.5s ease-out;
     -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
