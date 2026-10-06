@@ -37,8 +37,9 @@ heroImage: "/profile/mizuame-profile.webp"
 * 株式会社TOKYO CREATIONが作成/運営するSector Sevenの技術協力@2022/10(UEエンジニア)
 * 非公開業務委託2社(UEプロジェクト受託開発など)@2023/01~2025/03
 * Alche StudioでUEエンジニアとしてのインターン@2024/01~2024/12 (UEエンジニア、R&Dなど)
-* Santa Sunrise Inc.との業務委託契約@2024/04~**現在**(主にUnrealEngine周りのスクリプト、設計、バックエンド、インフラなど幅広くやっています)
 * 株式会社エンティエント / Entient Inc.との業務委託契約@2025/04~2026/03
+* 株式会社グリーホールディングス GreeJobsインターン SDD@2026/09
+* Santa Sunrise Inc.との業務委託契約@2024/04~**現在**(主にUnrealEngine周りのスクリプト、設計、バックエンド、インフラなど幅広くやっています)
 * 株式会社Mimi Marte@2025/06~**現在**
 * 会社名非公開でゲーム系インターン@2026/01~**現在**
 * 株式会社DubGuild@2026/05~**現在**(Scaling Speech AI)
